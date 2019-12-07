@@ -1,4 +1,4 @@
-SLP Course Day 1
+SLP Course Day 2
 ================
 
 Contents
