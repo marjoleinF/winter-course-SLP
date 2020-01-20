@@ -3,4 +3,6 @@ Winter Course Statistical Learning and Prediction
 
 Welcome statistical learners!
 
-Here you will find course materials for the Winter Course Statistical Learning and Prediction. But we have not uploaded any content yet.
+In this repository, you find the materials for the Winter Course Statistical Learning and Prediction.
+
+Before the start of the workshop, make sure you perform the preparations as described in the "Preparation Workshop Statistical Learning and Prediction.pdf" file above.
