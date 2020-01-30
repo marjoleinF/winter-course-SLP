@@ -1,6 +1,9 @@
 Winter Course Statistical Learning and Prediction
 ========================================================
 
+Attention: Your lecturer got into some train problems around Schiphol and has to make use of the 'academisch kwartier'.
+
+
 Welcome statistical learners!
 
 In this repository, you can find the materials for the Winter Course.
