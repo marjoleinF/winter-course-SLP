@@ -3,8 +3,9 @@ Winter Course Statistical Learning and Prediction
 
 Welcome statistical learners!
 
-In this repository, you can find the materials for the Winter Course.
+This folder contains materials for the graduate course on Statistical Learning and Prediction.
 
-Before the start of the workshop, make sure you perform the preparations as described in the "Preparation Workshop Statistical Learning and Prediction.pdf" file above.
+Course dates are Tuesday February 1, 2022 + Wednesday February 2, 2022.
 
-5 Feb 2020: The worked out answers to all exercises from Session 5 (GAMs, SVMs, decision trees and tree ensembles) are now available under Day 2 - Session 5.
+In this repository, all the course materials will be posted.
+
