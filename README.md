@@ -5,11 +5,14 @@ Welcome statistical learners!
 
 This folder contains materials for the graduate course on Statistical Learning and Prediction.
 
-Course dates are Tuesday February 1, 2022 + Wednesday February 2, 2022.
+Course dates are: Tuesday February 1, 2022 + Wednesday February 2, 2022.
 
-Your instructors will be Dr. Tom Wilderjans & Dr. Marjolein Fokkema.
+Your instructors will be: Dr. Tom Wilderjans & Dr. Marjolein Fokkema.
 
-In this repository, all the course materials will be posted.
+In this repository, all the course materials (slides, datasets, R code, worked out solutions to exercises) will be posted.  
+
+For now, make sure you perform the preparations as described in the corresponding PDF before the start of the course. 
+
 
 We will use the following book in the course:
 
