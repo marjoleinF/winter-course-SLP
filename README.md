@@ -1,7 +1,7 @@
 Winter Course Statistical Learning and Prediction
 ========================================================
 
-### Welcome statistical learners!
+## Welcome statistical learners!
 
 This folder contains materials for the graduate course on Statistical Learning and Prediction.
 
@@ -12,7 +12,7 @@ In this repository, all the course materials (slides, datasets, R code, worked o
 For now, make sure you perform the preparations as described in the corresponding PDF before the start of the course. 
 
 
-### Course dates, times & location
+## Course dates, times & location
 
 The course will take place on Tuesday February 1, 2022 + Wednesday February 2, 2022.
 
@@ -30,7 +30,7 @@ The program consists of five sessions:
 For further info, preparations and content, see the pdf with course preparations.
 
 
-# Literature
+## Literature
 
 We will use the following book in the course:
 
