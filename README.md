@@ -20,12 +20,12 @@ The course will be online, and we will meet on Zoom: https://universiteitleiden.
 
 The program consists of five sessions:
 
-- Session 1 Tue Feb 1 11h-13h: Marjolein Fokkema (introduction to statistical learning / bias-variance trade-off)
-- Session 2 Tue Feb 1 14h-16h45: Tom Wilderjans (classification, resampling, cross-validation)
-- Session 3 Tue Feb 1 17h00-18h15: Tom Wilderjans (model selection and regularization)
+- Session 1, Tue 01-02, 11h-13h: Introduction to statistical learning, bias-variance trade-off (Marjolein Fokkema)
+- Session 2, Tue 01-02, 14h-16h45: Classification, resampling, cross-validation (Tom Wilderjans)
+- Session 3 Tue 01-02, 17h00-18h15: Model selection and regularization (Tom Wilderjans)
 
-- Session 4 Wed Feb 2 10h-12h: Tom Wilderjans (unsupervised learning)
-- Session 5 Wed Feb 2 13h-18h: Marjolein Fokkema (non-linear and ensemble methods)
+- Session 4 Wed 02-02, 10h-12h: Unsupervised learning (Tom Wilderjans)
+- Session 5 Wed 02-02, 13h-18h: Non-linear and ensemble methods (Marjolein Fokkema)
 
 For further info, preparations and content, see the pdf with course preparations.
 
