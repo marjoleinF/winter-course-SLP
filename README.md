@@ -3,11 +3,9 @@ Winter Course Statistical Learning and Prediction
 
 ## Welcome statistical learners!
 
-This folder contains materials for the graduate course on Statistical Learning and Prediction.
+In this repository, all the course materials (slides, datasets, R code, worked out solutions to exercises) will be posted.  
 
 Your instructors will be: Dr. Tom Wilderjans & Dr. Marjolein Fokkema.
-
-In this repository, all the course materials (slides, datasets, R code, worked out solutions to exercises) will be posted.  
 
 For now, make sure you perform the preparations as described in the corresponding PDF before the start of the course. 
 
