@@ -4,7 +4,7 @@ author: "Marjolein Fokkema"
 output: pdf_document
 ---
 
-# Exercise 1
+# Exercise 1: Fit a smoothing spline
 
 Read in data:
 
@@ -18,7 +18,7 @@ round(cor(MASQ[train, sapply(MASQ, is.numeric)]), digits = 2)
 
 Fit a smoothing spline of the `AD` variable to predict `D_DEPDYS`:
 
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, fig.width = 5, fig.height=3.5}
 library("mgcv")
 GAM <- gam(D_DEPDYS ~ s(AD, bs = "cr"), 
            data = MASQ[train, ], method = "REML", family = "binomial")
@@ -28,15 +28,20 @@ plot(GAM, residuals = TRUE)
 
 Inspect the basis functions that were created for `AD`: 
 
-```{r}
+```{r, fig.height=4, fig.width=6}
 mod_mat <- model.matrix(GAM)
 matplot(sort(MASQ$AD[train]), mod_mat[order(MASQ$AD[train]), ], type = "l",
         xlab = "AD", ylab = "Basis function")
 ```
 
+The curves show the basis functions that were created to fit the spline. Each basis function obtained a coefficients, in order to fit the smoothing spline of AD. If you would be interested in the coefficients for each function (but normally we would simply look at results of `summary` and `plot`), you can extract them as follows:
+
+```{r}
+coef(GAM)
+```
 
 
-
+\newpage
 # Exercise 2: Multiple predictors
 
 ```{r, fig.width=7, fig.height=4, warning=FALSE, message=FALSE}
@@ -47,6 +52,8 @@ summary(GAM)
 par(mfrow = c(2, 3))
 plot(GAM)
 ```
+All predictors except `geslacht` have a significant effect. The chi-square indicates `AD` explains the most variance, followed by `GDM`. The `edf` (empirical degrees of freedom) suggest strongest non-linearity for the `AD` scale. The `AA` and `GDM` scales have effects close to linear, as also suggested by the plots.
+
 
 We compute the mean squared error and misclassification rate using predicted probabilities, for both training and test observations:
 
@@ -55,28 +62,105 @@ y_train <- as.numeric(MASQ[train, "D_DEPDYS"]) - 1
 y_test <- as.numeric(MASQ[-train, "D_DEPDYS"]) - 1
 
 ## Training data
-GAM_preds_train <- predict(GAM, newdata = MASQ[train, ], type = "response")
-mean((y_train - GAM_preds_train)^2) ## Brier score
-tab_train <- prop.table(table(MASQ[train, "D_DEPDYS"], GAM_preds_train > .5)) ## confusion matrix
+gam_preds_train <- predict(GAM, newdata = MASQ[train, ], type = "response")
+mean((y_train - gam_preds_train)^2) ## Brier score
+tab_train <- prop.table(table(MASQ[train, "D_DEPDYS"], gam_preds_train > .5)) ## confusion matrix
 tab_train
 1 - sum(diag(tab_train)) ## MCR
 
 ## Test data
-GAM_preds_test <- predict(GAM, newdata = MASQ[-train, ], type = "response")
-mean((y_test - GAM_preds_test)^2) ## Brier score
-tab_test <- prop.table(table(MASQ[-train, "D_DEPDYS"], GAM_preds_test > .5)) ## confusion matrix
+gam_preds_test <- predict(GAM, newdata = MASQ[-train, ], type = "response")
+mean((y_test - gam_preds_test)^2) ## Brier score
+tab_test <- prop.table(table(MASQ[-train, "D_DEPDYS"], gam_preds_test > .5)) ## confusion matrix
 tab_test
 1 - sum(diag(tab_test)) ## MCR
 ```
 
 The Brier score and confusion matrices are quite similar between training and test data, indicating little overfitting. 
+Alternatively, we may want to compute an ROC curve:
 
-```{r, warning=FALSE, message=FALSE, fig.width=5, fig.height=5}
-## Or, compute ROC curve
+```{r, warning=FALSE, message=FALSE, fig.width=3, fig.height=3}
 library("pROC")
-plot(roc(resp = y_test, pred = GAM_preds_test))
-auc(resp = y_test, pred = GAM_preds_test)
+plot(roc(resp = y_test, pred = gam_preds_test))
+auc(resp = y_test, pred = gam_preds_test)
 ```
+
+\newpage
+# Exercise 3: Fit support vector machines
+
+```{r}
+library("e1071")
+cost <- c(.001, .01, .1, 1, 5, 10, 100)
+set.seed(42)
+tune.out <- tune(svm, D_DEPDYS ~ ., data = MASQ[train, ], kernel = "linear", 
+                 ranges = list(cost = cost))
+tune.out$best.parameters
+svmfit <- svm(D_DEPDYS ~ ., data = MASQ[train,], kernel = "linear", 
+              cost = 0.1)
+```
+
+```{r}
+## Traing performance
+svm_preds_train <- predict(svmfit, newdata = MASQ[train, ])
+tab_train <- prop.table(table(MASQ[train, "D_DEPDYS"], svm_preds_train))
+1 - sum(diag(tab_train)) ## misclassification rate
+
+## Test performance
+svm_preds_test <- predict(svmfit, newdata = MASQ[-train, ])
+tab_test <- prop.table(table(MASQ[-train, "D_DEPDYS"], svm_preds_test))
+tab_test
+1 - sum(diag(tab_test)) ## misclassification rate
+```
+
+
+## Radial basis kernel
+
+Perhaps we can further improve predictions by using a non-linear kernel. We try the radial basis kernel:
+
+```{r, eval = FALSE}
+gamma <- c(0.5, 1, 2, 3, 4)
+tune.out <- tune(svm, D_DEPDYS ~ ., data = MASQ[train, ],
+                 kernel = "radial", ranges = list(
+                   cost = cost, gamma = gamma))
+```
+
+
+```{r, eval = FALSE, echo=FALSE}
+gamma <- c(0.5, 1, 2, 3, 4)
+tune.out <- tune(svm, D_DEPDYS ~ ., data = MASQ[train, ],
+                 kernel = "radial", ranges = list(
+                   cost = cost, gamma = gamma))
+save(tune.out, file = "tune.out.radial.Rda")
+```
+
+```{r, echo=FALSE}
+load(file = "tune.out.radial.Rda")
+```
+
+```{r}
+tune.out$best.parameters
+rbkfit <- svm(D_DEPDYS ~ ., data = MASQ[train, ],
+              kernel = "radial", gamma = 0.5,
+              cost = 1)
+```
+
+
+```{r}
+tab_train <- table(MASQ[train, "D_DEPDYS"], 
+                   predict(rbkfit, newdata = MASQ[train, ]))
+1 - sum(diag(prop.table(tab_train))) ## misclassification rate
+```
+
+```{r}
+tab_test <- table(MASQ[-train, "D_DEPDYS"], 
+                   predict(rbkfit, newdata = MASQ[-train, ]))
+1 - sum(diag(prop.table(tab_test))) ## misclassification rate
+```
+
+The radial basis kernel did not improve performance on test data, over the linear kernel. 
+
+
+
 
 
 
@@ -106,10 +190,8 @@ tab_test <- prop.table(table(MASQ[-train, "D_DEPDYS"], ct_preds_test > .5)) ## c
 1 - sum(diag(tab_test)) ## MCR
 ```
 
-The conditional inference tree provided best predictive accuracy of the single trees. 
 
-
-```{r, fig.width=5, fig.height=5}
+```{r, fig.width=3, fig.height=3}
 ## AUC on test observations
 plot(roc(resp = y_test, pred = ct_preds_test))
 auc(resp = y_test, pred = ct_preds_test)
@@ -149,9 +231,11 @@ Compute train MCR:
 ```{r}
 tab <- prop.table(table(MASQ[train, "D_DEPDYS"],
                         predict(bag.ens, newdata = MASQ[train,])))
+tab
 1 - sum(diag(tab))  ## misclassification rate for bagging
 tab <- prop.table(table(MASQ[train, "D_DEPDYS"],
                         predict(rf.ens, newdata = MASQ[train,])))
+tab
 1 - sum(diag(tab)) ## misclassification rate for RF
 ```
 
@@ -159,14 +243,16 @@ Compute test MCR:
 
 ```{r}
 tab <- prop.table(table(MASQ[-train, "D_DEPDYS"],
-predict(bag.ens, newdata = MASQ[-train,])))
+                        predict(bag.ens, newdata = MASQ[-train,])))
+tab
 1 - sum(diag(tab))  ## misclassification rate for bagging
 tab <- prop.table(table(MASQ[-train, "D_DEPDYS"],
-predict(rf.ens, newdata = MASQ[-train,])))
+                        predict(rf.ens, newdata = MASQ[-train,])))
+tab
 1 - sum(diag(tab)) ## misclassification rate for RF
 ```
 
-We compute squared error on predicted probabilitites (Brier score) for the training data:
+We compute squared error on predicted probabilities (Brier score) for the training data:
 
 ```{r}
 predict(bag.ens, newdata = MASQ[train,], type = "prob")[1:10, ]
@@ -174,22 +260,22 @@ predict(bag.ens, newdata = MASQ[train,], type = "prob")[1:10, ]
 
 Note that the predict method returns predicted probabilities for both classes, for objects of class `randomForest`. 
 
-Therefore, we selected the second column of the returned probabilities (`[ , 2]`):
+Therefore, we select the second column of the returned probabilities (`[ , 2]`):
 
 ```{r}
-mean((y_train -
-        predict(bag.ens, newdata = MASQ[train,], type = "prob")[ , 2])^2)
-mean((y_train - 
-        predict(rf.ens, newdata = MASQ[train,], type = "prob")[ , 2])^2)
+bag_preds_train <- predict(bag.ens, newdata = MASQ[train,], type = "prob")[ , 2]
+rf_preds_train <- predict(rf.ens, newdata = MASQ[train,], type = "prob")[ , 2]
+mean((y_train - bag_preds_train)^2)
+mean((y_train - rf_preds_train)^2)
 ```
 
 And for the test data:
 
 ```{r}
-mean((y_test -
-        predict(bag.ens, newdata = MASQ[-train,], type = "prob")[ , 2])^2)
-mean((y_test - 
-        predict(rf.ens, newdata = MASQ[-train,], type = "prob")[ , 2])^2)
+bag_preds_test <- predict(bag.ens, newdata = MASQ[-train,], type = "prob")[ , 2]
+rf_preds_test <- predict(rf.ens, newdata = MASQ[-train,], type = "prob")[ , 2]
+mean((y_test - bag_preds_test)^2)
+mean((y_test - rf_preds_test)^2)
 ```
 
 Test MCRs are identical for the bagged ensemble and random forest. Test SEL is lower for the random forest.
@@ -236,7 +322,7 @@ partialPlot(rf.ens, x.var = "geslacht", pred.data = MASQ[train,], which.class = 
 
 
 
-
+\newpage
 # Exercise 6: Fit a gradient boosted ensemble
 
 ```{r}
@@ -278,11 +364,6 @@ mean((y_test - gbm_preds_test)^2) ## brier score
 
 This seems to be the lowest test error we obtained thus far. We will further improve by tuning the parameters in the next exercise.
 
-
-
-
-
-
 ## Interpretation
 
 ```{r, fig.width=4, fig.height=2}
@@ -310,8 +391,8 @@ summary(boost.ens, cex.lab = .7, cex.axis = .7, cex.sub = .7, cex = .7,
         method = permutation.test.gbm, las = 2)
 ```
 
-
-## Tuning parameters 
+\newpage
+# Exercise 7: Tuning parameters of gradient boosting 
 
 ```{r, warning=FALSE, message=FALSE}
 library("caret")
@@ -367,7 +448,7 @@ We refit the ensemble using the parameter values that can be expected to optimiz
 
 ```{r}
 set.seed(42)
-boost.ens2 <- gbm(D_DEPDYS ~ ., data = MASQ[-train,], n.trees = 1000,
+boost.ens2 <- gbm(D_DEPDYS ~ ., data = MASQ[train,], n.trees = 1000,
                   shrinkage = .01, interaction.depth = 2,
                   distribution = "bernoulli")
 
@@ -385,9 +466,39 @@ tab_test
 mean((y_test - gbm2_preds_test)^2)
 ```
 
-Both MCR and SEL improved compared to the earlier boosted ensemble. The boosted ensemble with tuned parameters also outperformed the random forest and bagged ensemble fitted to these data previously. All fitted tree ensembles require all variables for making a prediction (because all variables have non-zero importances).
-
-The CART tree requires only the AD scale for prediction. The ctree requires only the variables AD and GDD, and in some cases also GDD for prediction. They thus require substantially less information for prediction, but at a cost to predictive accuracy.
+Only SEL slightly improved compared to the earlier boosted ensemble. 
 
 
+\newpage
+# Conclusion
 
+```{r, echo=FALSE}
+library("knitr")
+res <- data.frame(MCR_train = rep(NA, times = 7), 
+                  SEL_train = rep(NA, times = 7), 
+                  MCR_test = rep(NA, times = 7), 
+                  SEL_test = rep(NA, times = 7))
+rownames(res) <- c("GAM", "SVM", "ctree", "bagging", "RF", "GBM", "GBM tuned")
+tr <- cbind(gam_preds_train, svm_preds_train, ct_preds_train, bag_preds_train, 
+            rf_preds_train, gbm_preds_train, gbm2_preds_train)
+tr[,"svm_preds_train"] <- tr[,"svm_preds_train"] - 1
+te <- cbind(gam_preds_test, svm_preds_test, ct_preds_test, bag_preds_test, 
+            rf_preds_test, gbm_preds_test, gbm2_preds_test)
+te[,"svm_preds_test"] <- te[,"svm_preds_test"] - 1
+res[ , "MCR_train"] <- apply(tr, 2, \(x) mean((x > .5) != y_train))
+res[ , "MCR_test"] <- apply(te, 2, \(x) mean((x > .5) != y_test))
+res[ , "SEL_train"] <- apply(tr, 2, \(x) mean((y_train - x)^2))
+res[ , "SEL_test"] <- apply(te, 2, \(x) mean((y_test - x)^2))
+kable(res, digits = 3)
+```
+
+There are only minor performance differences between the methods. With a small number of predictors, and lack of interaction effects, this is perhaps not where prediction methods like SVMs, random forests or gradient boosting will shine. Results on other prediction problems may vary, and the current course simply aims to show you how to fit, interpret and apply these methods.
+
+However, often marginal improvements may be expected for any of these sophisticated methods. Often, logistic and linear regression are hard to beat, as we also found in Fokkema et al. (2022).
+
+In term of the information required for making a prediction and in terms of interpretability, GAMs and single decision trees perform well. All fitted tree ensembles require all variables for making a prediction (because all variables have non-zero importances). The ctree requires only the variables AD and GDD, and in some cases also GDD for prediction. 
+
+Note that random forests and bagging show the biggest difference in performance between train and test error. That is also why OOB predictions and OOB errors are very useful for these methods, as they do not present with the same over-optimism as the training errors.
+
+
+Fokkema, M., Iliescu, D., Greiff, S., & Ziegler, M. (2022). Machine Learning and Prediction in Psychological Assessment: Some Promises and Pitfalls. *European Journal of Psychological Assessment, 38*(3), 165-175.https://doi.org/10.1027/1015-5759/a000714
