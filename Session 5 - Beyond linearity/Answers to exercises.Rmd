@@ -57,19 +57,59 @@ y_test <- as.numeric(MASQ[-train, "D_DEPDYS"]) - 1
 GAM_preds_train <- predict(GAM, newdata = MASQ[train, ], type = "response")
 mean((y_train - GAM_preds_train)^2) ## Brier score
 tab_train <- prop.table(table(MASQ[train, "D_DEPDYS"], GAM_preds_train > .5)) ## confusion matrix
+tab_train
 1 - sum(diag(tab_train)) ## MCR
 
 ## Test data
 GAM_preds_test <- predict(GAM, newdata = MASQ[-train, ], type = "response")
 mean((y_test - GAM_preds_test)^2) ## Brier score
 tab_test <- prop.table(table(MASQ[-train, "D_DEPDYS"], GAM_preds_test > .5)) ## confusion matrix
+tab_test
 1 - sum(diag(tab_test)) ## MCR
 ```
 
 The Brier score and confusion matrices are quite similar between training and test data, indicating little overfitting. 
 
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, fig.width=5, fig.height=5}
 ## Or, compute ROC curve
 library("pROC")
+plot(roc(resp = y_test, pred = GAM_preds_test))
 auc(resp = y_test, pred = GAM_preds_test)
 ```
+
+
+
+\newpage
+# Exercise 4: Fit a ctree to MASQ data
+
+```{r fig.width=7, fig.height=4, message = FALSE, warning=FALSE}
+library("partykit")
+ct <- ctree(D_DEPDYS ~ . , data = MASQ[train, ])
+plot(ct, gp = gpar(cex = .5))
+```
+
+The conditional inference tree indicates a positive effect of the AD, GDM and GDD subscales on the probability of having a depressive / dysthymic disorder.
+
+```{r}
+## Training data
+ct_preds_train <- predict(ct, newdata = MASQ[train, ], type = "prob")[ , 2]
+mean((y_train - ct_preds_train)^2) ## Brier score
+tab_train <- prop.table(table(MASQ[train, "D_DEPDYS"], ct_preds_train > .5)) ## confusion matrix
+1 - sum(diag(tab_train)) ## MCR
+
+## Test data
+y_test <- as.numeric(MASQ[-train, "D_DEPDYS"]) - 1
+ct_preds_test <- predict(ct, newdata = MASQ[-train, ], type = "prob")[ , 2] 
+mean((y_test - ct_preds_test)^2) ## Brier score
+tab_test <- prop.table(table(MASQ[-train, "D_DEPDYS"], ct_preds_test > .5)) ## confusion matrix
+1 - sum(diag(tab_test)) ## MCR
+```
+
+The conditional inference tree provided best predictive accuracy of the single trees. 
+
+
+```{r, fig.width=5, fig.height=5}
+## AUC on test observations
+plot(roc(resp = y_test, pred = ct_preds_test))
+auc(resp = y_test, pred = ct_preds_test)
+``` 
