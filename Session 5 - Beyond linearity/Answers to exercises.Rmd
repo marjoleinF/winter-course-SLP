@@ -1,0 +1,34 @@
+---
+title: "Answers to exercises Session 5"
+author: "Marjolein Fokkema"
+output: pdf_document
+---
+
+# Exercise 1
+
+Read in data:
+
+```{r}
+load("MASQ.Rda")
+set.seed(1)
+train <- sample(1:nrow(MASQ), size = nrow(MASQ)*.8)
+summary(MASQ)
+```
+
+Fit a smoothing spline of the `AD` variable to predict `D_DEPDYS`:
+
+```{r, warning=FALSE, message=FALSE}
+library("mgcv")
+GAM <- gam(D_DEPDYS ~ s(AD, bs = "cr"), 
+           data = MASQ[train, ], method = "REML", family = "binomial")
+summary(GAM)
+plot(GAM, residuals = TRUE)
+``` 
+
+Inspect the basis functions that were created for `AD`: 
+
+```{r}
+mod_mat <- model.matrix(GAM)
+matplot(sort(MASQ$AD[train]), mod_mat[order(MASQ$AD[train]), ], type = "l",
+        xlab = "AD", ylab = "Basis function")
+```
