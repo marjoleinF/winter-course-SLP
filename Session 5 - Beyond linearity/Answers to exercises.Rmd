@@ -13,6 +13,7 @@ load("MASQ.Rda")
 set.seed(1)
 train <- sample(1:nrow(MASQ), size = nrow(MASQ)*.8)
 summary(MASQ)
+round(cor(MASQ[train, sapply(MASQ, is.numeric)]), digits = 2)
 ```
 
 Fit a smoothing spline of the `AD` variable to predict `D_DEPDYS`:
@@ -80,7 +81,7 @@ auc(resp = y_test, pred = GAM_preds_test)
 
 
 \newpage
-# Exercise 4: Fit a ctree to MASQ data
+# Exercise 4: Fit a conditional inference tree
 
 ```{r fig.width=7, fig.height=4, message = FALSE, warning=FALSE}
 library("partykit")
@@ -113,3 +114,8 @@ The conditional inference tree provided best predictive accuracy of the single t
 plot(roc(resp = y_test, pred = ct_preds_test))
 auc(resp = y_test, pred = ct_preds_test)
 ``` 
+
+
+
+
+

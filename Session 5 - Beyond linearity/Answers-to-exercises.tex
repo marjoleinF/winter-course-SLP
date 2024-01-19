@@ -1,0 +1,475 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Answers to exercises Session 5},
+  pdfauthor={Marjolein Fokkema},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Answers to exercises Session 5}
+\author{Marjolein Fokkema}
+\date{}
+
+\begin{document}
+\maketitle
+
+\hypertarget{exercise-1}{%
+\section{Exercise 1}\label{exercise-1}}
+
+Read in data:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{load}\NormalTok{(}\StringTok{"MASQ.Rda"}\NormalTok{)}
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{1}\NormalTok{)}
+\NormalTok{train }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\FunctionTok{nrow}\NormalTok{(MASQ), }\AttributeTok{size =} \FunctionTok{nrow}\NormalTok{(MASQ)}\SpecialCharTok{*}\NormalTok{.}\DecValTok{8}\NormalTok{)}
+\FunctionTok{summary}\NormalTok{(MASQ)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  D_DEPDYS       AD               AA             GDD             GDA      
+##  0:1927   Min.   : 26.00   Min.   :17.00   Min.   :12.00   Min.   :11.0  
+##  1:1670   1st Qu.: 64.00   1st Qu.:22.00   1st Qu.:20.00   1st Qu.:19.0  
+##           Median : 77.00   Median :28.00   Median :29.00   Median :24.0  
+##           Mean   : 75.05   Mean   :32.01   Mean   :30.64   Mean   :25.4  
+##           3rd Qu.: 88.00   3rd Qu.:39.00   3rd Qu.:40.00   3rd Qu.:31.0  
+##           Max.   :110.00   Max.   :83.00   Max.   :60.00   Max.   :54.0  
+##       GDM          leeftijd    geslacht
+##  Min.   :15.0   Min.   :17.0   m:1317  
+##  1st Qu.:31.0   1st Qu.:28.0   v:2280  
+##  Median :40.0   Median :38.0           
+##  Mean   :40.6   Mean   :38.8           
+##  3rd Qu.:50.0   3rd Qu.:48.0           
+##  Max.   :75.0   Max.   :91.0
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{round}\NormalTok{(}\FunctionTok{cor}\NormalTok{(MASQ[train, }\FunctionTok{sapply}\NormalTok{(MASQ, is.numeric)]), }\AttributeTok{digits =} \DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##            AD   AA   GDD   GDA   GDM leeftijd
+## AD       1.00 0.51  0.79  0.61  0.74     0.01
+## AA       0.51 1.00  0.58  0.79  0.70     0.01
+## GDD      0.79 0.58  1.00  0.72  0.81    -0.07
+## GDA      0.61 0.79  0.72  1.00  0.80    -0.05
+## GDM      0.74 0.70  0.81  0.80  1.00    -0.04
+## leeftijd 0.01 0.01 -0.07 -0.05 -0.04     1.00
+\end{verbatim}
+
+Fit a smoothing spline of the \texttt{AD} variable to predict
+\texttt{D\_DEPDYS}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(}\StringTok{"mgcv"}\NormalTok{)}
+\NormalTok{GAM }\OtherTok{\textless{}{-}} \FunctionTok{gam}\NormalTok{(D\_DEPDYS }\SpecialCharTok{\textasciitilde{}} \FunctionTok{s}\NormalTok{(AD, }\AttributeTok{bs =} \StringTok{"cr"}\NormalTok{), }
+           \AttributeTok{data =}\NormalTok{ MASQ[train, ], }\AttributeTok{method =} \StringTok{"REML"}\NormalTok{, }\AttributeTok{family =} \StringTok{"binomial"}\NormalTok{)}
+\FunctionTok{summary}\NormalTok{(GAM)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Family: binomial 
+## Link function: logit 
+## 
+## Formula:
+## D_DEPDYS ~ s(AD, bs = "cr")
+## 
+## Parametric coefficients:
+##             Estimate Std. Error z value Pr(>|z|)    
+## (Intercept) -0.24089    0.04751   -5.07 3.98e-07 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Approximate significance of smooth terms:
+##        edf Ref.df Chi.sq p-value    
+## s(AD) 4.09  5.041  672.4  <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## R-sq.(adj) =  0.297   Deviance explained = 23.7%
+## -REML = 1522.2  Scale est. = 1         n = 2877
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(GAM, }\AttributeTok{residuals =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Answers-to-exercises_files/figure-latex/unnamed-chunk-2-1.pdf}
+
+Inspect the basis functions that were created for \texttt{AD}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mod\_mat }\OtherTok{\textless{}{-}} \FunctionTok{model.matrix}\NormalTok{(GAM)}
+\FunctionTok{matplot}\NormalTok{(}\FunctionTok{sort}\NormalTok{(MASQ}\SpecialCharTok{$}\NormalTok{AD[train]), mod\_mat[}\FunctionTok{order}\NormalTok{(MASQ}\SpecialCharTok{$}\NormalTok{AD[train]), ], }\AttributeTok{type =} \StringTok{"l"}\NormalTok{,}
+        \AttributeTok{xlab =} \StringTok{"AD"}\NormalTok{, }\AttributeTok{ylab =} \StringTok{"Basis function"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Answers-to-exercises_files/figure-latex/unnamed-chunk-3-1.pdf}
+
+\hypertarget{exercise-2-multiple-predictors}{%
+\section{Exercise 2: Multiple
+predictors}\label{exercise-2-multiple-predictors}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(}\StringTok{"mgcv"}\NormalTok{)}
+\NormalTok{GAM }\OtherTok{\textless{}{-}} \FunctionTok{gam}\NormalTok{(D\_DEPDYS }\SpecialCharTok{\textasciitilde{}} \FunctionTok{s}\NormalTok{(AD) }\SpecialCharTok{+} \FunctionTok{s}\NormalTok{(AA) }\SpecialCharTok{+} \FunctionTok{s}\NormalTok{(GDD) }\SpecialCharTok{+} \FunctionTok{s}\NormalTok{(GDA) }\SpecialCharTok{+} \FunctionTok{s}\NormalTok{(GDM) }\SpecialCharTok{+} \FunctionTok{s}\NormalTok{(leeftijd) }\SpecialCharTok{+}\NormalTok{ geslacht, }
+           \AttributeTok{data =}\NormalTok{ MASQ[train, ], }\AttributeTok{method =} \StringTok{"REML"}\NormalTok{, }\AttributeTok{family =} \StringTok{"binomial"}\NormalTok{)}
+\FunctionTok{summary}\NormalTok{(GAM)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Family: binomial 
+## Link function: logit 
+## 
+## Formula:
+## D_DEPDYS ~ s(AD) + s(AA) + s(GDD) + s(GDA) + s(GDM) + s(leeftijd) + 
+##     geslacht
+## 
+## Parametric coefficients:
+##             Estimate Std. Error z value Pr(>|z|)    
+## (Intercept) -0.33822    0.07755  -4.361 1.29e-05 ***
+## geslachtv    0.13314    0.09517   1.399    0.162    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Approximate significance of smooth terms:
+##               edf Ref.df  Chi.sq  p-value    
+## s(AD)       4.243  5.238 148.910  < 2e-16 ***
+## s(AA)       1.001  1.002   0.115  0.73591    
+## s(GDD)      2.185  2.793  11.185  0.00971 ** 
+## s(GDA)      3.855  4.806  33.279 4.62e-06 ***
+## s(GDM)      1.001  1.001  52.723  < 2e-16 ***
+## s(leeftijd) 3.050  3.817  17.530  0.00137 ** 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## R-sq.(adj) =  0.331   Deviance explained =   27%
+## -REML = 1478.1  Scale est. = 1         n = 2877
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{2}\NormalTok{, }\DecValTok{3}\NormalTok{))}
+\FunctionTok{plot}\NormalTok{(GAM)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Answers-to-exercises_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+We compute the mean squared error and misclassification rate using
+predicted probabilities, for both training and test observations:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{y\_train }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(MASQ[train, }\StringTok{"D\_DEPDYS"}\NormalTok{]) }\SpecialCharTok{{-}} \DecValTok{1}
+\NormalTok{y\_test }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(MASQ[}\SpecialCharTok{{-}}\NormalTok{train, }\StringTok{"D\_DEPDYS"}\NormalTok{]) }\SpecialCharTok{{-}} \DecValTok{1}
+
+\DocumentationTok{\#\# Training data}
+\NormalTok{GAM\_preds\_train }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(GAM, }\AttributeTok{newdata =}\NormalTok{ MASQ[train, ], }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\FunctionTok{mean}\NormalTok{((y\_train }\SpecialCharTok{{-}}\NormalTok{ GAM\_preds\_train)}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{) }\DocumentationTok{\#\# Brier score}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.1653101
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{tab\_train }\OtherTok{\textless{}{-}} \FunctionTok{prop.table}\NormalTok{(}\FunctionTok{table}\NormalTok{(MASQ[train, }\StringTok{"D\_DEPDYS"}\NormalTok{], GAM\_preds\_train }\SpecialCharTok{\textgreater{}}\NormalTok{ .}\DecValTok{5}\NormalTok{)) }\DocumentationTok{\#\# confusion matrix}
+\NormalTok{tab\_train}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    
+##         FALSE      TRUE
+##   0 0.4174487 0.1223497
+##   1 0.1160932 0.3441084
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{sum}\NormalTok{(}\FunctionTok{diag}\NormalTok{(tab\_train)) }\DocumentationTok{\#\# MCR}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.2384428
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# Test data}
+\NormalTok{GAM\_preds\_test }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(GAM, }\AttributeTok{newdata =}\NormalTok{ MASQ[}\SpecialCharTok{{-}}\NormalTok{train, ], }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\FunctionTok{mean}\NormalTok{((y\_test }\SpecialCharTok{{-}}\NormalTok{ GAM\_preds\_test)}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{) }\DocumentationTok{\#\# Brier score}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.1666467
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{tab\_test }\OtherTok{\textless{}{-}} \FunctionTok{prop.table}\NormalTok{(}\FunctionTok{table}\NormalTok{(MASQ[}\SpecialCharTok{{-}}\NormalTok{train, }\StringTok{"D\_DEPDYS"}\NormalTok{], GAM\_preds\_test }\SpecialCharTok{\textgreater{}}\NormalTok{ .}\DecValTok{5}\NormalTok{)) }\DocumentationTok{\#\# confusion matrix}
+\NormalTok{tab\_test}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    
+##         FALSE      TRUE
+##   0 0.4027778 0.1166667
+##   1 0.1236111 0.3569444
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{sum}\NormalTok{(}\FunctionTok{diag}\NormalTok{(tab\_test)) }\DocumentationTok{\#\# MCR}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.2402778
+\end{verbatim}
+
+The Brier score and confusion matrices are quite similar between
+training and test data, indicating little overfitting.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# Or, compute ROC curve}
+\FunctionTok{library}\NormalTok{(}\StringTok{"pROC"}\NormalTok{)}
+\FunctionTok{plot}\NormalTok{(}\FunctionTok{roc}\NormalTok{(}\AttributeTok{resp =}\NormalTok{ y\_test, }\AttributeTok{pred =}\NormalTok{ GAM\_preds\_test))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Answers-to-exercises_files/figure-latex/unnamed-chunk-6-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{auc}\NormalTok{(}\AttributeTok{resp =}\NormalTok{ y\_test, }\AttributeTok{pred =}\NormalTok{ GAM\_preds\_test)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Area under the curve: 0.8295
+\end{verbatim}
+
+\newpage
+
+\hypertarget{exercise-4-fit-a-conditional-inference-tree}{%
+\section{Exercise 4: Fit a conditional inference
+tree}\label{exercise-4-fit-a-conditional-inference-tree}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(}\StringTok{"partykit"}\NormalTok{)}
+\NormalTok{ct }\OtherTok{\textless{}{-}} \FunctionTok{ctree}\NormalTok{(D\_DEPDYS }\SpecialCharTok{\textasciitilde{}}\NormalTok{ . , }\AttributeTok{data =}\NormalTok{ MASQ[train, ])}
+\FunctionTok{plot}\NormalTok{(ct, }\AttributeTok{gp =} \FunctionTok{gpar}\NormalTok{(}\AttributeTok{cex =}\NormalTok{ .}\DecValTok{5}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Answers-to-exercises_files/figure-latex/unnamed-chunk-7-1.pdf}
+
+The conditional inference tree indicates a positive effect of the AD,
+GDM and GDD subscales on the probability of having a depressive /
+dysthymic disorder.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# Training data}
+\NormalTok{ct\_preds\_train }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(ct, }\AttributeTok{newdata =}\NormalTok{ MASQ[train, ], }\AttributeTok{type =} \StringTok{"prob"}\NormalTok{)[ , }\DecValTok{2}\NormalTok{]}
+\FunctionTok{mean}\NormalTok{((y\_train }\SpecialCharTok{{-}}\NormalTok{ ct\_preds\_train)}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{) }\DocumentationTok{\#\# Brier score}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.1705674
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{tab\_train }\OtherTok{\textless{}{-}} \FunctionTok{prop.table}\NormalTok{(}\FunctionTok{table}\NormalTok{(MASQ[train, }\StringTok{"D\_DEPDYS"}\NormalTok{], ct\_preds\_train }\SpecialCharTok{\textgreater{}}\NormalTok{ .}\DecValTok{5}\NormalTok{)) }\DocumentationTok{\#\# confusion matrix}
+\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{sum}\NormalTok{(}\FunctionTok{diag}\NormalTok{(tab\_train)) }\DocumentationTok{\#\# MCR}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.2457421
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# Test data}
+\NormalTok{y\_test }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(MASQ[}\SpecialCharTok{{-}}\NormalTok{train, }\StringTok{"D\_DEPDYS"}\NormalTok{]) }\SpecialCharTok{{-}} \DecValTok{1}
+\NormalTok{ct\_preds\_test }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(ct, }\AttributeTok{newdata =}\NormalTok{ MASQ[}\SpecialCharTok{{-}}\NormalTok{train, ], }\AttributeTok{type =} \StringTok{"prob"}\NormalTok{)[ , }\DecValTok{2}\NormalTok{] }
+\FunctionTok{mean}\NormalTok{((y\_test }\SpecialCharTok{{-}}\NormalTok{ ct\_preds\_test)}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{) }\DocumentationTok{\#\# Brier score}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.1738697
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{tab\_test }\OtherTok{\textless{}{-}} \FunctionTok{prop.table}\NormalTok{(}\FunctionTok{table}\NormalTok{(MASQ[}\SpecialCharTok{{-}}\NormalTok{train, }\StringTok{"D\_DEPDYS"}\NormalTok{], ct\_preds\_test }\SpecialCharTok{\textgreater{}}\NormalTok{ .}\DecValTok{5}\NormalTok{)) }\DocumentationTok{\#\# confusion matrix}
+\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{sum}\NormalTok{(}\FunctionTok{diag}\NormalTok{(tab\_test)) }\DocumentationTok{\#\# MCR}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.2388889
+\end{verbatim}
+
+The conditional inference tree provided best predictive accuracy of the
+single trees.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# AUC on test observations}
+\FunctionTok{plot}\NormalTok{(}\FunctionTok{roc}\NormalTok{(}\AttributeTok{resp =}\NormalTok{ y\_test, }\AttributeTok{pred =}\NormalTok{ ct\_preds\_test))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Setting levels: control = 0, case = 1
+\end{verbatim}
+
+\begin{verbatim}
+## Setting direction: controls < cases
+\end{verbatim}
+
+\includegraphics{Answers-to-exercises_files/figure-latex/unnamed-chunk-9-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{auc}\NormalTok{(}\AttributeTok{resp =}\NormalTok{ y\_test, }\AttributeTok{pred =}\NormalTok{ ct\_preds\_test)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Setting levels: control = 0, case = 1
+## Setting direction: controls < cases
+\end{verbatim}
+
+\begin{verbatim}
+## Area under the curve: 0.805
+\end{verbatim}
+
+\end{document}
