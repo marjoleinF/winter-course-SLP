@@ -118,4 +118,276 @@ auc(resp = y_test, pred = ct_preds_test)
 
 
 
+\newpage
+# Exercise 5: Fit a bagged ensemble and random forest
+
+Fit the ensembles:
+
+```{r, fig.width=6, fig.height=3, warning = FALSE, message = FALSE}
+library("randomForest")
+set.seed(1)
+bag.ens <- randomForest(D_DEPDYS ~ AD + AA + GDD + GDA + GDM + leeftijd + geslacht, 
+                        data = MASQ[train,], importance = TRUE, mtry = 7)
+set.seed(1)
+rf.ens <- randomForest(D_DEPDYS ~ AD + AA + GDD + GDA + GDM + leeftijd + geslacht, 
+                       data = MASQ[train,], importance = TRUE, mtry = sqrt(7))
+plot(bag.ens, cex.lab = .7, cex.axis = .7, cex.main = .7, main = "Bagging")
+```
+
+For these data, the out-of-bag (OOB) error decreases fast with the first 100 trees. After 200-300 trees, the OOB error stabilizes.
+
+Note that for binary classification, three curves are provided: The black curve shows the misclassification error, the green and red curves show the classification error in each of the classes (comparable to sensitivity and specificity). 
+
+```{r fig.width=6, fig.height=3}
+plot(rf.ens, cex.lab = .7, cex.axis = .7, cex.main = .7, main = "Random forest")
+```
+
+The OOB error plotted against the number of trees shows a very similar pattern as with the bagged ensemble. 
+
+Compute train MCR:
+
+```{r}
+tab <- prop.table(table(MASQ[train, "D_DEPDYS"],
+                        predict(bag.ens, newdata = MASQ[train,])))
+1 - sum(diag(tab))  ## misclassification rate for bagging
+tab <- prop.table(table(MASQ[train, "D_DEPDYS"],
+                        predict(rf.ens, newdata = MASQ[train,])))
+1 - sum(diag(tab)) ## misclassification rate for RF
+```
+
+Compute test MCR:
+
+```{r}
+tab <- prop.table(table(MASQ[-train, "D_DEPDYS"],
+predict(bag.ens, newdata = MASQ[-train,])))
+1 - sum(diag(tab))  ## misclassification rate for bagging
+tab <- prop.table(table(MASQ[-train, "D_DEPDYS"],
+predict(rf.ens, newdata = MASQ[-train,])))
+1 - sum(diag(tab)) ## misclassification rate for RF
+```
+
+We compute squared error on predicted probabilitites (Brier score) for the training data:
+
+```{r}
+predict(bag.ens, newdata = MASQ[train,], type = "prob")[1:10, ]
+```
+
+Note that the predict method returns predicted probabilities for both classes, for objects of class `randomForest`. 
+
+Therefore, we selected the second column of the returned probabilities (`[ , 2]`):
+
+```{r}
+mean((y_train -
+        predict(bag.ens, newdata = MASQ[train,], type = "prob")[ , 2])^2)
+mean((y_train - 
+        predict(rf.ens, newdata = MASQ[train,], type = "prob")[ , 2])^2)
+```
+
+And for the test data:
+
+```{r}
+mean((y_test -
+        predict(bag.ens, newdata = MASQ[-train,], type = "prob")[ , 2])^2)
+mean((y_test - 
+        predict(rf.ens, newdata = MASQ[-train,], type = "prob")[ , 2])^2)
+```
+
+Test MCRs are identical for the bagged ensemble and random forest. Test SEL is lower for the random forest.
+
+
+## Interpretation
+
+We inspect variable importances:
+
+```{r, fig.width=6, fig.height=3}
+importance(bag.ens) 
+varImpPlot(bag.ens, cex = .7, cex.main = .7)
+``` 
+
+According to the reduction in MSE for the out-of-bag observations (left panel) if the values of each predictor variable are permuted, the AD (anhedonic depression), GDM (general distress mixed), and GDD (general distress depression) are the most important predictors of a depressive disorder diagnosis.
+
+According to the improvement in node purity (i.e., training error; right panel), AD, leeftijd (age) and GDM are the most important predictors of of a depressive disorder diagnosis.
+
+```{r, fig.width=6, fig.height=3}
+importance(rf.ens)
+varImpPlot(rf.ens, cex = .7, cex.main = .7)
+```
+
+The AD, GDM and GDD scales appear most important in the random forest.
+
+We request partial dependence plots for the bagged ensemble:
+
+```{r, fig.width=6, fig.height=2.5}
+par(mfrow = c(1, 3))
+partialPlot(bag.ens, x.var = "AD", pred.data = MASQ[train,], which.class = "1")
+partialPlot(bag.ens, x.var = "GDD", pred.data = MASQ[train,], which.class = "1")
+partialPlot(bag.ens, x.var = "geslacht", pred.data = MASQ[train,], which.class = "1")
+```
+
+Note that we have to specify the appropriate class label for these plots if we perform classification, otherwise we get partial dependence plots for the effect on the probability of belonging to the first ("0", non-depressed) class.
+
+```{r, fig.width=6, fig.height=2.5}
+par(mfrow = c(1, 3))
+partialPlot(rf.ens, x.var = "AD", pred.data = MASQ[train,], which.class = "1")
+partialPlot(rf.ens, x.var = "GDD", pred.data = MASQ[train,], which.class = "1")
+partialPlot(rf.ens, x.var = "geslacht", pred.data = MASQ[train,], which.class = "1")
+``` 
+
+
+
+
+
+# Exercise 6: Fit a gradient boosted ensemble
+
+```{r}
+library("gbm")
+set.seed(1)
+MASQ$D_DEPDYS <- as.numeric(MASQ$D_DEPDYS) - 1 ## note: gbm wants a numeric response
+boost.ens <- gbm(D_DEPDYS ~ ., data = MASQ[train, ], n.trees = 1000,
+                 shrinkage = .01, interaction.depth = 4,
+                 distribution = "bernoulli")
+``` 
+
+The `n.trees` argument controls the number of generated trees, which defaults to 100. The `bag.fraction` argument controls the fraction of training set observations randomly generated to fit each tree in the ensemble. Tree depth is controlled by argument `interaction.depth`, which defaults to 1 (trees with a single split, i.e., 2 terminal nodes, i.e., main effects only). The learning rate is controlled by the `shrinkage argument`, which defaults to 0.001.
+
+```{r, fig.width=6, fig.height=3}
+gbm.perf(boost.ens, method = "OOB", oobag.curve = TRUE)
+```
+
+The black curve in the first plot represents training error, which decreases as a function of the number of iterations (fitted trees). The blue curve represents the estimated cumulative improvement in the deviance as estimated based on OOB observations (we requested this through specifying `oobag.curve = TRUE`).
+
+In the first plot, the vertical blue dotted line indicates at which iteration the OOB error starts increasing (instead of decreasing). In the second plot, we see that this is where the OOB change in deviance becomes negative instead of positive. Thus, this appears the optimal number of iterations (according to the OOB deviance).
+
+We also obtained a warning that OOB generally underestimates the number of required iterations, so the initial value of 1000 might not be bad, also because the second plot indicates no big risk of overfitting (i.e., although the OOB change in deviance becomes negative, but it remains very close to 0).
+
+```{r}
+## Train performance
+gbm_preds_train <- predict(boost.ens, newdata = MASQ[train,], type = "response")
+tab_train <- prop.table(table(true = y_train, predicted = gbm_preds_train > .5))
+tab_train
+1 - sum(diag(tab_train)) ## misclassification rate
+mean((y_train - gbm_preds_train)^2) ## brier score
+
+## Test performance
+gbm_preds_test <- predict(boost.ens, newdata = MASQ[-train,], type = "response")
+tab_test <- prop.table(table(true = y_test, predicted = gbm_preds_test > .5))
+tab_test
+1 - sum(diag(tab_test)) ## misclassification rate
+mean((y_test - gbm_preds_test)^2) ## brier score
+```
+
+This seems to be the lowest test error we obtained thus far. We will further improve by tuning the parameters in the next exercise.
+
+
+
+
+
+
+## Interpretation
+
+```{r, fig.width=4, fig.height=2}
+plot(boost.ens, i.var = "AD")
+plot(boost.ens, i.var = "GDM")
+plot(boost.ens, i.var = "geslacht")
+```
+
+The partial dependence plot suggest that the higher the AD and GDM scale scores, the higher the probability of having depression or dysthymia. Men appear to have a slightly lower probability of having a diagnosis, compared to women.
+
+We request a summary of the model in order to obtain variable importances:
+
+```{r, fig.width=5, fig.height=3.5}
+summary(boost.ens, cex.lab = .7, cex.axis = .7, cex.sub = .7, cex = .7, las = 2)
+```
+
+Through the various `cex` arguments, we set the size of text and plotting symbols. Through the `las` argument, we specify the orientation of the axis labels (see `?par` for more explanation).
+
+Like with the bagged and random forest ensembles, again we find that the AD variable is the strongest predictor of depressive disorder, followed by GDM and GDD.
+
+Function `gbm()` return importances based on training error, by default (see `?summary.gbm`). We can obtain permutation importances (but note: these are computed using both in-bag and OOB observations, see also `?summary.gbm`) through specifying the method argument:
+
+```{r, fig.width=5, fig.height=3.5}
+summary(boost.ens, cex.lab = .7, cex.axis = .7, cex.sub = .7, cex = .7,
+        method = permutation.test.gbm, las = 2)
+```
+
+
+## Tuning parameters 
+
+```{r, warning=FALSE, message=FALSE}
+library("caret")
+grid <- expand.grid(shrinkage = c(.1, .01, .001), 
+                    n.trees = c(10, 100, 1000),
+                    interaction.depth = 1:4,
+                    n.minobsinnode = 10)
+head(grid, 6)
+tail(grid, 6)
+```
+
+Above, we created a grid of tuning parameters that predictive accuracy will be assessed over. As the `train()` function from package caret employs sub sampling to assess performance of the models, we have to set the random seed to allow for future replication of our results. Note that running the following code fits repeatedly fits boosted models for each set of parameter values, so it will take some time to run.
+
+Note that `train()` requires a factor as the response for classification task, (unlike function `gbm()`), so I set the response to be a factor:
+
+```{r, eval=FALSE}
+traindat <- MASQ[train, ]
+traindat$D_DEPDYS <- as.factor(traindat$D_DEPDYS)
+set.seed(42)
+gbmFit <- train(D_DEPDYS ~ . , data = traindat, tuneGrid = grid,
+                distribution = "bernoulli", method = "gbm", verbose = FALSE)
+```
+
+```{r eval=FALSE, echo=FALSE}
+save(gbmFit, file = "gbmFit.Rda")
+```
+
+```{r, eval=TRUE, echo=FALSE}
+load("gbmFit.Rda")
+```
+
+Check out `?train` and `?trainControl` (which explains the arguments passed to argument `trControl`) to see what we did with this code. The default of bootstrap sampling with 25 repeats was used, (see `method` and `number` arguments of in `?trainControl`). Note that these predictive accuracies are estimated on test observations (i.e., 'OOB' observations).
+
+We plot the results:
+
+```{r, fig.width=5, fig.height=3}
+plot(gbmFit)
+```
+
+Note that the highest accuracies are close to what we have obtained with the models we fitted before. The plot suggests that with higher values of shrinkage, we need less boosting iterations, which is as expected. Note that several combinations of parameter settings appear to yield similar accuracy.
+
+Increasing tree depth to values > 1 seems not to make much different, only seems beneficial when there are less trees, suggesting mostly main effects of the predictor variables.
+
+The best accuracy is obtained with:
+
+```{r}
+gbmFit$bestTune
+```
+
+These optimal settings differ, but not by much, from our original parameter settings.
+
+We refit the ensemble using the parameter values that can be expected to optimize predictive accuracy:
+
+```{r}
+set.seed(42)
+boost.ens2 <- gbm(D_DEPDYS ~ ., data = MASQ[-train,], n.trees = 1000,
+                  shrinkage = .01, interaction.depth = 2,
+                  distribution = "bernoulli")
+
+## Train performance
+gbm2_preds_train <- predict(boost.ens2, newdata = MASQ[train,], type = "response")
+tab_train <- prop.table(table(true = y_train, predicted = gbm2_preds_train > .5))
+1 - sum(diag(tab_train))
+mean((y_train - gbm2_preds_train)^2)
+
+## Test performance
+gbm2_preds_test <- predict(boost.ens2, newdata = MASQ[-train,], type = "response")
+tab_test <- prop.table(table(true = y_test, predicted = gbm2_preds_test > .5))
+tab_test
+1 - sum(diag(tab_test))
+mean((y_test - gbm2_preds_test)^2)
+```
+
+Both MCR and SEL improved compared to the earlier boosted ensemble. The boosted ensemble with tuned parameters also outperformed the random forest and bagged ensemble fitted to these data previously. All fitted tree ensembles require all variables for making a prediction (because all variables have non-zero importances).
+
+The CART tree requires only the AD scale for prediction. The ctree requires only the variables AD and GDD, and in some cases also GDD for prediction. They thus require substantially less information for prediction, but at a cost to predictive accuracy.
+
+
 
