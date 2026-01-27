@@ -1,0 +1,480 @@
+---
+title: "Linear Model Selection & Regularization"
+author: "Marjolein Fokkema"
+output:
+  beamer_presentation: default
+  slidy_presentation: default
+---
+
+
+# Chapter 6: Linear Model Selection and Regularization
+
+What if we have (too) many features?
+
+Three classes of methods: 
+
+- Subset selection
+
+- Regularization
+
+  - Minimizing fit + penalty, a very powerful idea! Used in penalized regression, decision trees, tree ensembles, hierarchical models, smoothing splines / GAMs, ...
+
+- Dimension reduction (ISLR section 6.3; next week)
+
+
+
+
+# Chapter 6: (Linear) Model Selection and Regularization
+
+- Generalizations to other response variables types within the GLM (Poission, Binomial, etc.) are straightforward.
+
+  - Video 2 chapter 6: Replace RSS with Deviance (-2LL) in the fit-plus-penalty criterion.
+  
+- Using generalizations is easy: E.g, in package `glmnet`, simply specify different `family`.
+
+
+
+
+
+
+# Best subset and stepwise selection (penalty on L0 norm)
+
+- OLS coefficients $\hat{\beta}^{OLS}$ minimize:
+
+$$ RSS = \sum_{i=1}^n \left( y_i - \beta_0 - \sum^p_{j=1} \beta_j x_{ij} \right) $$
+
+- Best subset and stepwise selection (forward, backward or both) also minimize a fit-plus-penalty criterion:
+
+$$ \sum_{i=1}^n \left( y_i - \beta_0 - \sum^p_{j=1} \beta_j x_{ij} \right) + \lambda \sum^p_{j=1} I (\beta_j \neq 0) $$
+
+  - Right-most sum is often referred to as L0 norm:  $||\beta||_0$, which is the number of non-zero elements.
+
+
+
+
+# Best subset selection
+
+Trying $2^p$ combinations is computationally prohibitive. 
+
+- Many algorithms have been developed to speed up the search, allowing for (much) larger $p$.
+  
+- Best subset can work well in problems with high signal-to-noise ratio (i.e., low $\sigma^2$).
+
+
+
+
+# Stepwise selection (forward and/or backward) 
+
+Stepwise regression has a pretty bad name, because of widespread incorrect use of:
+
+- Standard errors and p-values computed and reported as if no variable selection has taken place. 
+  
+- Degrees of freedom used up by the model assumed to be equal to the number of selected variables.
+  
+- Fit measures like $R^2$ computed on data that was used for variable selection.
+  
+Solution: After selecting variables on the training data, perform inference or evaluate performance on new set of (validation) data! 
+
+
+
+
+# Shrinkage methods
+
+Ridge regression coefficient estimates $\hat{\beta}^R$ minimize:
+
+$$ \sum_{i=1}^n \left( y_i - \beta_0 - \sum^p_{j=1} \beta_j x_{ij} \right) + \lambda \sum^p_{j=1} \beta_j^2$$
+
+  - Right-most sum often referred to as squared L2 norm: $||\mathbf{\beta}||_2^2$
+
+
+
+Lasso regression coefficients estimates $\hat{\beta}^L$ minimize:
+
+
+$$ \sum_{i=1}^n \left( y_i - \beta_0 - \sum^p_{j=1} \beta_j x_{ij} \right) + \lambda \sum^p_{j=1} |\beta_j| $$
+
+  - Right-most sum is often referred to as L1 norm: $||\mathbf{\beta}||_1$
+
+
+
+
+# Computational challenges
+
+Even if optimal value of $\lambda$ is known or given, minimizing the fit-plus-penalty criterion can be challenging:
+
+- With L0 norm: Derivative of the fit-plus-penalty criterion w.r.t. $\beta$ is zero in many places. But where it's interesting, it has jump discontinuities and is not differentiable.
+
+- With L1 norm: Not differentiable with respect to a coordinate where that coordinate is zero. Elsewhere, the partial derivatives are just constants, $\pm 1$ depending on the quadrant.
+
+- With L2 norm: Differentiable, if we use the squared L2 norm it's differentiable even at zero. 
+
+
+
+# Ridge and degrees of freedom
+
+OLS coefficients can be obtained as follows:
+
+$$\hat{\mathbf{\beta}}^{OLS} = (\mathbf{X}^{\top}\mathbf{X})^{-1} \mathbf{X}^{\top}\mathbf{y}$$
+
+$$\hat{y}^{OLS} = \mathbf{X}\hat{\mathbf{\beta}}^{OLS} = \mathbf{X}(\mathbf{X}^{\top}\mathbf{X})^{-1} \mathbf{X}^{\top}\mathbf{y} = \mathbf{P} \mathbf{y}$$
+
+- $\mathbf{P}$ is the projection matrix, a.k.a. 'hat' matrix.
+
+- Values on the diagonal of $\mathbf{P}$ quantify how much an observation contributes to its own predicted value.
+
+- By definition, in OLS the trace (sum of diagonal elements) of $\mathbf{P}$ is equal to the rank of $\mathbf{X}$, which is the number of independent parameters.
+
+
+
+
+# Ridge solution and degrees of freedom
+
+Ridge coefficients can be obtained as follows:
+
+$$ \hat{\mathbf{\beta}}^R = (\mathbf{X}^{\top}\mathbf{X} + \lambda \mathbf{I} )^{-1} \mathbf{X}^{\top}\mathbf{y}$$
+
+$$ \hat{y}^R = \mathbf{X}\hat{\mathbf{\beta}}^R = \mathbf{X}(\mathbf{X}^{\top}\mathbf{X} + \lambda \mathbf{I} )^{-1} \mathbf{X}^{\top}\mathbf{y} = \mathbf{P}_\lambda \mathbf{y}$$
+
+- For ridge, the *effective* degrees of freedom are given by $\mathrm{tr}(\mathbf{P}_\lambda)$.
+
+- Values on the diagonal $\mathbf{P}_\lambda$ are $\leq$ values on the diagonal of $\mathbf{P}$ from OLS: Predicted values are shrunken towards the mean (like coefficients are shrunken towards zero).
+
+
+
+
+# Useful extensions: Elastic Net
+
+Both Ridge and Lasso penalties are added to the criterion:
+
+$$ \sum_{i=1}^n \left( y_i - \beta_0 - \sum^p_{j=1} \beta_j x_{ij} \right) + \lambda \left( \frac{1-\alpha}{2}\sum^p_{j=1} \beta_j^2 + \alpha \sum^p_{j=1} |\beta_j| \right)$$
+
+- Where $\alpha$ determines the weight of the Lasso and Ridge penalties.
+
+- Note that now two hyperparameters need to be optimized!
+
+- Question: What penalties result when we set $\alpha = 0$? And when we set $\alpha = 1$?
+
+```{r, echo=FALSE}
+## Load training data
+train <- read.table("zip.train", sep = " ") 
+#dim(train)
+#head(train[1:10])
+#colSums(is.na(train)) ## last columns has only missings
+train <- train[ , -258]
+
+## Load test data
+test <- read.table("zip.test", sep = " ") 
+#colSums(is.na(test))
+#dim(test)
+#head(test[1:10])
+```
+
+
+
+
+# Elastic net: Digit recognition example
+
+- Task: Recognize hand-written digits from 16x16 grayscale images.
+
+- Data: `r nrow(train)` training samples, `r nrow(test)` test samples.
+
+- Predictor variables: 256 grayscale values (one for each pixel).
+
+- 10-class response (digits 0-9)
+
+```{r, echo=FALSE, fig.width=3, fig.height=1}
+par(mfrow = c(2, 5), mar = c(1, 1, 0.1, 0.1)) # set graphical parameters
+for (i in 0:9) {
+  im <- matrix(as.numeric(train[train$V1 == i, 2:257][1, ]), nrow = 16, ncol = 16)
+  image(t(apply(-im, 1, rev)), col = gray((0:63)/63), yaxt = "n", xaxt = "n")
+  ## 63 is the minimum number of unique grayscale values observed for any variable
+}
+```
+
+- Question: What do you expect for signal-to-noise ratio (low or high)? Multicollinearity? 
+
+- In this example, we will perform binary classification of digits 2 ($y = 0$) and 3 ($y = 1$).
+
+
+
+# Elastic net: Digit recognition example
+
+```{r, echo=FALSE}
+## V1 is an indicator for the digit, select only 2s (0) and 3s (1)
+train <- train[train$V1 %in% 2:3, ]
+train$V1 <- train$V1 - 2
+#dim(train)
+test <- test[test$V1 %in% 2:3, ]
+test$V1 <- test$V1 - 2
+#dim(test)
+
+## Prepare data for glmnet
+y <- train$V1
+x <- as.matrix(train[ , -1])
+x_test <- as.matrix(test[ , -1])
+y_test <- test$V1
+``` 
+
+```{r, warning=FALSE, message=FALSE}
+library("glmnet")
+set.seed(42)
+L_mod <- cv.glmnet(x = x, y = y, family = "binomial", 
+                   alpha = 1)
+L_mod
+```
+
+
+
+
+
+# Elastic net: Digit recognition example
+
+```{r, warning=FALSE, message=FALSE}
+set.seed(42)
+EN_mod <- cv.glmnet(x = x, y = y, family = "binomial", 
+                    alpha = .5)
+EN_mod
+```
+
+```{r, echo=FALSE}
+## Overwrite glmnet plotting function, because secondary x axis does
+## not use cex.axis
+plot.cv.glmnet <- function (x, sign.lambda = 1, ...) 
+{
+    cvobj = x
+    xlab = expression(Log(lambda))
+    if (sign.lambda < 0) 
+        xlab = paste("-", xlab, sep = "")
+    plot.args = list(x = sign.lambda * log(cvobj$lambda), y = cvobj$cvm, 
+        ylim = range(cvobj$cvup, cvobj$cvlo), xlab = xlab, ylab = cvobj$name, 
+        type = "n")
+    new.args = list(...)
+    new.args$cex.axis = new.args$cex.lab = new.args$cex = .7
+    new.args$cex.main = .85
+    if (length(new.args)) 
+        plot.args[names(new.args)] = new.args
+    do.call("plot", plot.args)
+    glmnet:::error.bars(sign.lambda * log(cvobj$lambda), cvobj$cvup, cvobj$cvlo, 
+        width = 0.01, col = "darkgrey")
+    points(sign.lambda * log(cvobj$lambda), cvobj$cvm, pch = 20, 
+        col = "red")
+    axis(side = 3, at = sign.lambda * log(cvobj$lambda), labels = paste(cvobj$nz), 
+        tick = FALSE, line = 0, cex.axis = .7)
+    abline(v = sign.lambda * log(cvobj$lambda.min), lty = 3)
+    abline(v = sign.lambda * log(cvobj$lambda.1se), lty = 3)
+    invisible()
+}
+```
+
+
+
+
+# Elastic net: Digit recognition example
+
+```{r, warning=FALSE, message=FALSE, fig.width=6, fig.height=3}
+par(mfrow = c(1, 2))
+plot(L_mod, main = "Lasso regularization path")
+plot(EN_mod, main = "Elastic net regularization path")
+```
+
+
+
+
+# Elastic net: Digit recognition example
+
+```{r, echo=FALSE, results='hide'}
+y_hat_train_L <- 1 / (1+exp(-predict(L_mod, newx = x)))
+y_hat_test_L <- 1 / (1+exp(-predict(L_mod, newx = x_test)))
+y_hat_train_EN <- 1 / (1+exp(-predict(EN_mod, newx = x)))
+y_hat_test_EN <- 1 / (1+exp(-predict(EN_mod, newx = x_test)))
+
+mean(y == as.numeric(y_hat_train_L > .5)) ## train CCR for lasso
+mean(y == as.numeric(y_hat_train_EN > .5)) ## train CCR for el net
+
+mean(y_test == as.numeric(y_hat_test_L > .5)) ## test CCR for lasso
+mean(y_test == as.numeric(y_hat_test_EN > .5)) ## test CCR for el net
+```
+
+Correct classification rates on training data:
+
+- Lasso: `r mean(y == as.numeric(y_hat_train_L > .5))`
+
+- Elastic Net: `r mean(y == as.numeric(y_hat_train_EN > .5))`
+
+Correct classification rates on test data:
+
+- Lasso:  `r mean(y_test == as.numeric(y_hat_test_L > .5))`
+
+- Elastic Net: `r mean(y_test == as.numeric(y_hat_test_EN > .5))`
+
+Misclassified by Lasso, correctly classified by Elastic Net:
+
+```{r, echo=FALSE, fig.width=2.3, fig.height=0.75}
+diff <- which(!(y_test == as.numeric(y_hat_test_L > .5)) & (y_test == as.numeric(y_hat_test_EN > .5)))
+
+par(mfrow = c(1, 3), mar = c(1, 1, 0.1, 0.1)) # set graphical parameters
+for (i in diff) {
+  im <- matrix(as.numeric(test[i, 2:257][1, ]), nrow = 16, ncol = 16)
+  image(t(apply(-im, 1, rev)), col = gray((0:63)/63), yaxt = "n", xaxt = "n")
+}
+```
+
+(Lasso predicted `r ifelse(predict(L_mod, newx = x_test[diff, ]) < 0, 2, 3)`; Elastic Net predicted `r ifelse(predict(EN_mod, newx = x_test[diff, ]) < 0, 2, 3)`)
+
+
+
+
+# Useful extensions: Relaxed Lasso
+
+- Lasso performs shrinkage and selection. Both strength and weakness! 
+
+- $\lambda$ optimized for selection will likely not be optimal for shrinkage, vice versa.
+
+  - In order to shrink many coefficients to zero, large coefficients will be shrunken too heavily. 
+  
+- Relaxed Lasso: 
+  - Use Lasso for variable selection
+  - Refit OLS on selected predictors only. 
+  - Compute final coefficients as a weighted version:
+
+$$\hat{\beta}_{\mathrm{relaxed}} = (1-\gamma) \hat{\beta}_{\mathrm{OLS}} + \gamma \hat{\beta}_{Lasso}$$
+
+
+
+
+# Relaxed Lasso: Predicting baseball player's salaries
+
+```{r, echo=FALSE}
+library("ISLR")
+Hitters <- na.omit(Hitters)
+x <- model.matrix(Salary ~ .-1 , data=Hitters)
+y <- Hitters$Salary
+```
+
+- "Hitters" data: Major League Baseball data (from 1986-1987), $N =$ `r nrow(Hitters)`.
+
+- Task: Predict player's salary.
+
+- `r ncol(Hitters) - 1` predictors: Times at bat, number of homeruns, number of walks, for many variable in '86 and '87 season.
+
+```{r, fig.width=4, fig.height=4, eval=FALSE}
+library("glmnet")
+set.seed(42)
+cv_lasso <- cv.glmnet(x, y) ## 'standard' lasso
+plot(cv_lasso)
+```
+
+
+
+
+# Relaxed Lasso: Predicting baseball player's salaries
+
+```{r, fig.width=4, fig.height=3.5, echo=FALSE}
+library("glmnet")
+set.seed(42)
+cv_lasso <- cv.glmnet(x, y) ## 'standard' lasso
+plot(cv_lasso)
+```
+
+```{r, echo=FALSE}
+## OVerwrite glmnet plotting function, because secondary x axis and legend do
+## not use cex, cex.axis or cex.lab arguments
+plot.cv.relaxed <- function (x, se.bands = TRUE, cex = .7, cex.axis= .7, 
+                             cex.lab = .7, cex.main = .85,...) 
+{
+    xr = x$relaxed
+    oldpar = par(mar = c(4, 4, 3, 4))
+    on.exit(par(oldpar))
+    statlist = xr$statlist
+    gamma = xr$gamma
+    ngamma = length(gamma)
+    ylim = range(unlist(lapply(statlist, "[[", "cvm")))
+    if (se.bands) {
+        cvup = lapply(statlist, "[[", "cvup")
+        cvlo = lapply(statlist, "[[", "cvlo")
+        ylim = range(ylim, unlist(cvup), unlist(cvlo))
+    }
+    xlim = log(range(unlist(lapply(statlist, "[[", "lambda"))) + 
+        1e-05)
+    cvcolors = rainbow(ngamma, start = 0.1, end = 1)
+    with(statlist[[ngamma]], plot(log(lambda), cvm, type = "n", 
+        xlab = expression(Log(lambda)), ylab = x$name, ylim = ylim, 
+        xlim = xlim, cex = cex, cex.axis= cex.axis, cex.lab = cex.lab,
+        cex.main = cex.main))
+    if (se.bands) {
+        for (i in seq(ngamma)) with(statlist[[i]], polygon(c(log(lambda), 
+            rev(log(lambda))), c(cvup, rev(cvlo)), col = "floralwhite", 
+            border = "antiquewhite"))
+    }
+    for (i in seq(ngamma)) with(statlist[[i]], lines(log(lambda), 
+        cvm, lwd = 1, col = cvcolors[i]))
+    mins = log(c(xr$lambda.min, xr$lambda.1se))
+    abline(v = mins, lty = 3)
+    dof = statlist[[1]]$nzero
+    lambda = statlist[[1]]$lambda
+    axis(side = 3, at = log(lambda), labels = paste(dof), tick = FALSE, 
+        line = 0, cex = cex, cex.axis= cex.axis, cex.lab = cex.lab)
+    shape::colorlegend(posy = c(0.2, 0.8), posx = c(0.93, 0.945) - 0.03, 
+        col = rainbow(ngamma, start = 0.1, end = 1), zlim = c(0, 
+            1), zval = gamma, main = expression(gamma), digit = 2, cex=cex)
+    invisible()
+}
+```
+
+
+
+
+# Relaxed Lasso: Predicting baseball player's salaries
+
+```{r, fig.width=5, fig.height=3.5, eval=FALSE}
+library("glmnet")
+set.seed(42)
+cv_relax <- cv.glmnet(x, y, relax = TRUE)
+plot(cv_relax)
+```
+
+
+
+
+# Relaxed Lasso: Predicting baseball player's salaries
+
+```{r, fig.width=5, fig.height=3.5, echo=FALSE}
+library("glmnet")
+set.seed(42)
+cv_relax <- cv.glmnet(x, y, relax = TRUE)
+plot(cv_relax)
+```
+
+
+
+
+# Relaxed Lasso: Predicting baseball player's salaries
+
+```{r}
+lasso_coefs <- as.matrix(coef(cv_lasso))
+knitr::kable(t(lasso_coefs[lasso_coefs != 0,]), 
+      format = "latex", digits = 3)
+relax_coefs <- as.matrix(coef(cv_relax))
+knitr::kable(t(relax_coefs[relax_coefs != 0,]), 
+      format = "latex", digits = 3)
+```
+
+
+
+
+# Reading materials
+
+What to focus on in the book (ISLR chapter 6):
+
+- Lasso and Ridge penalties as Bayesian priors.
+
+- Penalties as a "spending budget"
+
+  - We'll meet regularization with a penalty again with decision trees and smoothing splines.
+  
+  - We'll meet regularization with a budget again with support vector machines.
+  
+
+What to focus on in the paper (Hastie et al., 2020):
+
+- Which method works best in which situation? Best subset, forward stepwise, lasso, relaxed lasso.
