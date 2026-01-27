@@ -41,11 +41,11 @@ Three classes of methods:
 
 - OLS coefficients $\hat{\beta}^{OLS}$ minimize:
 
-$$ RSS = \sum_{i=1}^n \left( y_i - \beta_0 - \sum^p_{j=1} \beta_j x_{ij} \right) $$
+$$ RSS = \sum_{i=1}^n \left( y_i - \beta_0 - \sum^p_{j=1} \beta_j x_{ij} \right)^2 $$
 
 - Best subset and stepwise selection (forward, backward or both) also minimize a fit-plus-penalty criterion:
 
-$$ \sum_{i=1}^n \left( y_i - \beta_0 - \sum^p_{j=1} \beta_j x_{ij} \right) + \lambda \sum^p_{j=1} I (\beta_j \neq 0) $$
+$$ \sum_{i=1}^n \left( y_i - \beta_0 - \sum^p_{j=1} \beta_j x_{ij} \right)^2 + \lambda \sum^p_{j=1} I (\beta_j \neq 0) $$
 
   - Right-most sum is often referred to as L0 norm:  $||\beta||_0$, which is the number of non-zero elements.
 
@@ -82,7 +82,7 @@ Solution: After selecting variables on the training data, perform inference or e
 
 Ridge regression coefficient estimates $\hat{\beta}^R$ minimize:
 
-$$ \sum_{i=1}^n \left( y_i - \beta_0 - \sum^p_{j=1} \beta_j x_{ij} \right) + \lambda \sum^p_{j=1} \beta_j^2$$
+$$ \sum_{i=1}^n \left( y_i - \beta_0 - \sum^p_{j=1} \beta_j x_{ij} \right)^2 + \lambda \sum^p_{j=1} \beta_j^2$$
 
   - Right-most sum often referred to as squared L2 norm: $||\mathbf{\beta}||_2^2$
 
@@ -91,7 +91,7 @@ $$ \sum_{i=1}^n \left( y_i - \beta_0 - \sum^p_{j=1} \beta_j x_{ij} \right) + \la
 Lasso regression coefficients estimates $\hat{\beta}^L$ minimize:
 
 
-$$ \sum_{i=1}^n \left( y_i - \beta_0 - \sum^p_{j=1} \beta_j x_{ij} \right) + \lambda \sum^p_{j=1} |\beta_j| $$
+$$ \sum_{i=1}^n \left( y_i - \beta_0 - \sum^p_{j=1} \beta_j x_{ij} \right)^2 + \lambda \sum^p_{j=1} |\beta_j| $$
 
   - Right-most sum is often referred to as L1 norm: $||\mathbf{\beta}||_1$
 
@@ -222,6 +222,7 @@ L_mod <- cv.glmnet(x = x, y = y, family = "binomial",
                    alpha = 1)
 L_mod
 ```
+
 
 
 

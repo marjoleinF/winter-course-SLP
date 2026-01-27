@@ -1,0 +1,417 @@
+---
+title: "Solutions Session 3"
+author: "Marjolein Fokkema"
+output: pdf_document
+---
+
+
+
+```{r}
+student_full <- read.csv2("student-mat.csv")
+```
+
+
+# 1. Best subset, forward and backward selection
+
+```{r, echo=FALSE}
+set.seed(42)
+resamp <- sample(nrow(student_full))
+train_dat <- student_full[resamp[1:300], ]
+test_dat <- student_full[resamp[301:395], ]
+```
+
+
+```{r}
+library("leaps")
+
+## Best subset
+model_BSS <- regsubsets(G3 ~ . , data = student_full, nvmax = 12, 
+                        method = "exhaustive")
+sum <- summary(model_BSS)
+which.max(sum$adjr2); which.max(sum$cp); which.min(sum$bic)
+coef(model_BSS, id = 5)
+
+## Forward stepwise
+model_Fstep <- regsubsets(G3 ~ . , data = student_full, 
+                        nvmax = 33, method = "forward")
+sum <- summary(model_Fstep)
+which.max(sum$adjr2); which.max(sum$cp); which.min(sum$bic)
+coef(model_Fstep, id = 5)
+
+## Backward stepwise
+model_Bstep <- regsubsets(G3 ~ . , data = student_full, 
+                        nvmax = 33, method = "backward")
+sum <- summary(model_Bstep)
+which.max(sum$adjr2); which.max(sum$cp); which.min(sum$bic)
+coefs <- coef(model_Bstep, id = 5)
+coefs
+```
+
+With the BIC criterion, all three subset selection methods (best subset, forward stepwise, backward stepwise) selected the same variables, and thus yielded identical final models. 
+
+The strongest predictor of math achievement at moment 3 seems to be math achievement at moment 2 (which is not very surprising).
+
+To generate predictions for the test observations, I created a design matrix with intercept and the selected predictor variables, then multiplied those by the coefficients I extracted from one of the models:
+
+```{r}
+x_test <- as.matrix(cbind(1, test_dat[c("age", "famrel", "absences", "G1", "G2")])) 
+l0_preds <- x_test %*% coefs
+```
+
+Alternatively, you could also refit an OLS model to the selected predictors using function `lm()`, and then use the `predict` method to obtain predictions for the new observations.
+
+Next, I computed mean squared error (MSE) for the test observations:
+
+```{r}
+MSE_l0 <- mean((l0_preds - test_dat$G3)^2)
+MSE_l0
+MSE_max <- var(test_dat$G3) ## serves as a benchmark
+MSE_max
+1 - MSE_l0 / MSE_max ## cross-validated R2
+```
+
+
+
+\newpage
+# 2. Ridge, Lasso, Elastic Net
+
+
+I fitted a Lasso, Ridge and Elastic Net (with $\alpha = 0.5$) to the training data:
+
+```{r, fig.height=3, fig.width = 7, message=FALSE, warning=FALSE}
+library("glmnet")
+par(mfrow = c(1, 3))
+
+## Data preparation
+x <- model.matrix(G3 ~ . -1, train_dat)
+x_test <- model.matrix(G3 ~ . -1, test_dat)
+y <- train_dat$G3
+
+## Model fitting
+set.seed(42)
+l_mod <- cv.glmnet(x, y, alpha = 1) ## l is for lasso
+l_mod
+plot(l_mod)
+l_coefs <- coef(l_mod, s = "lambda.min") ## by default 1se criterion would be used
+l_coefs[l_coefs[ , 1] != 0, ]
+l_preds <- predict(l_mod, s = "lambda.min", newx = x_test)
+
+set.seed(42)
+r_mod <- cv.glmnet(x, y, alpha = 0) ## r is for ridge
+r_mod
+plot(r_mod)
+r_coefs <- coef(r_mod, s = "lambda.min")
+r_coefs[r_coefs[ , 1] != 0, ]
+r_preds <- predict(r_mod, s = "lambda.min", newx = x_test)
+
+set.seed(42)
+e_mod <- cv.glmnet(x, y, alpha = .5) ## e is for elastic net
+e_mod
+plot(e_mod)
+e_coefs <- coef(e_mod, s = "lambda.min")
+e_coefs[e_coefs[ , 1] != 0, ]
+e_preds <- predict(e_mod, s = "lambda.min", newx = x_test)
+```
+
+
+How many variables were selected depended on the $\lambda$ criterion used for selecting the final model: The value that yielded the lowest cross-validated MSE (`lambda.min`) or the value that is higher but yielded MSE within 1 SE of the minimum (`lambda.1se`). 
+
+With `lambda.min`, 8, 22 and 42 variables were retained with Lasso, Elastic Net and Ridge, respectively. (Note that `model.matrix` coded all factors as sets of dummy variables, thus increasing the number of predictor variables to 42 instead of 33).
+
+With `lambda.1se`, 1, 2 and 42 variables were retained with Lasso, Elastic Net and Ridge, respectively. 
+
+Finally, I computed test MSE:
+
+```{r}
+MSE_l <- mean((l_preds - test_dat$G3)^2)
+MSE_l
+MSE_r <- mean((r_preds - test_dat$G3)^2)
+MSE_r
+MSE_e <- mean((e_preds - test_dat$G3)^2)
+MSE_e
+1 - MSE_l / MSE_max ## cross-validated R2
+1 - MSE_r / MSE_max ## cross-validated R2
+1 - MSE_e / MSE_max ## cross-validated R2
+```
+
+Among the shrinkage methods, elastic net performed best. But all three shrinkage methods were outperformed by the subset selection methods.
+
+\newpage
+# 3. Relaxed lasso
+
+```{r, fig.width=5, fig.height=3.5}
+set.seed(42)
+rl_mod <- cv.glmnet(x, y, relax = TRUE)
+rl_mod
+plot(rl_mod)
+```
+The relaxed Lasso retained only 1 or 2 predictors, depending on the criterion used. Both $\lambda$ values had an optimal $\gamma$ value of 0, indicating that variables are selected using the Lasso penalty, but no shrinkage should be performed when estimating the coefficients. 
+
+```{r}
+rl_coefs <- coef(rl_mod, s = "lambda.min")
+rl_coefs[rl_coefs[ , 1] != 0, ]
+rl_coefs <- coef(rl_mod, s = "lambda.1se")
+rl_coefs[rl_coefs[ , 1] != 0, ]
+```
+
+The relaxed lasso retained the G2 variable as the strongest predictor, followed by the G1 variable. It appears that past math performance is the best predictor of future math performance. 
+
+```{r}
+rl_preds <- predict(rl_mod, s = "lambda.min", newx = x_test)
+MSE_rl <- mean((rl_preds - test_dat$G3)^2)
+MSE_rl
+1 - MSE_rl / MSE_max ## cross-validated R2
+```
+
+The relaxed Lasso outperformed the other three shrinkage methods on the test data. It was, however, outperformed by the subset selection methods. Note that the relaxed Lasso could also be termed a selection (not shrinkage) method with $\gamma = 0$: It is then forward stepwise selection with variable entry determined by the Lasso. 
+
+I would conclude that relaxed Lasso shows a very good accuracy-complexity trade-off, as it uses only 2 predictors and yields performance on the test set that is very close to the winning subset selection models that used 5 variables for prediction.
+
+\newpage
+# 4. Predicting Depressive Disorder using Questionnaire Items
+
+```{r, echo=FALSE, eval=FALSE}
+masq <- read.table("masq3597.txt", header = TRUE)
+masq <- masq[ , c("D_DEPDYS", "GENDER", "Leeftijd", 
+                  paste0("DEMOG", 1:8),
+                  paste0("MASQ0", 1:9), paste0("MASQ", 11:90))]
+#sapply(masq, function(x) table(is.na(x)))
+#sapply(masq, table)
+for (j in paste0("DEMOG", 1:8)) {
+  masq[ , j] <- ifelse(is.na(masq[,j]), "NA", masq[,j])
+}
+saveRDS(masq[1:(nrow(masq)/2),], file = "masq_train.Rda")
+saveRDS(masq[((nrow(masq)/2)+1):nrow(masq),], file = "masq_test.Rda")
+```
+
+Read in data:
+
+```{r}
+train <- readRDS("masq_train.Rda")
+test <- readRDS("masq_test.Rda")
+```
+
+```{r, echo=FALSE}
+## Overwrite glmnet plotting function, because secondary x axis does
+## not use cex.axis
+plot.cv.glmnet <- function (x, sign.lambda = 1, ...) 
+{
+    cvobj = x
+    xlab = expression(Log(lambda))
+    if (sign.lambda < 0) 
+        xlab = paste("-", xlab, sep = "")
+    plot.args = list(x = sign.lambda * log(cvobj$lambda), y = cvobj$cvm, 
+        ylim = range(cvobj$cvup, cvobj$cvlo), xlab = xlab, ylab = cvobj$name, 
+        type = "n")
+    new.args = list(...)
+    new.args$cex.axis = new.args$cex.lab = new.args$cex = .7
+    new.args$cex.main = .85
+    if (length(new.args)) 
+        plot.args[names(new.args)] = new.args
+    do.call("plot", plot.args)
+    glmnet:::error.bars(sign.lambda * log(cvobj$lambda), cvobj$cvup, cvobj$cvlo, 
+        width = 0.01, col = "darkgrey")
+    points(sign.lambda * log(cvobj$lambda), cvobj$cvm, pch = 20, 
+        col = "red")
+    axis(side = 3, at = sign.lambda * log(cvobj$lambda), labels = paste(cvobj$nz), 
+        tick = FALSE, line = 0, cex.axis = .7)
+    abline(v = sign.lambda * log(cvobj$lambda.min), lty = 3)
+    abline(v = sign.lambda * log(cvobj$lambda.1se), lty = 3)
+    invisible()
+}
+
+## OVerwrite glmnet plotting function, because secondary x axis and legend do
+## not use cex, cex.axis or cex.lab arguments
+plot.cv.relaxed <- function (x, se.bands = TRUE, cex = .7, cex.axis= .7, 
+                             cex.lab = .7, cex.main = .85,...) 
+{
+    xr = x$relaxed
+    oldpar = par(mar = c(4, 4, 3, 4))
+    on.exit(par(oldpar))
+    statlist = xr$statlist
+    gamma = xr$gamma
+    ngamma = length(gamma)
+    ylim = range(unlist(lapply(statlist, "[[", "cvm")))
+    if (se.bands) {
+        cvup = lapply(statlist, "[[", "cvup")
+        cvlo = lapply(statlist, "[[", "cvlo")
+        ylim = range(ylim, unlist(cvup), unlist(cvlo))
+    }
+    xlim = log(range(unlist(lapply(statlist, "[[", "lambda"))) + 
+        1e-05)
+    cvcolors = rainbow(ngamma, start = 0.1, end = 1)
+    with(statlist[[ngamma]], plot(log(lambda), cvm, type = "n", 
+        xlab = expression(Log(lambda)), ylab = x$name, ylim = ylim, 
+        xlim = xlim, cex = cex, cex.axis= cex.axis, cex.lab = cex.lab,
+        cex.main = cex.main))
+    if (se.bands) {
+        for (i in seq(ngamma)) with(statlist[[i]], polygon(c(log(lambda), 
+            rev(log(lambda))), c(cvup, rev(cvlo)), col = "floralwhite", 
+            border = "antiquewhite"))
+    }
+    for (i in seq(ngamma)) with(statlist[[i]], lines(log(lambda), 
+        cvm, lwd = 1, col = cvcolors[i]))
+    mins = log(c(xr$lambda.min, xr$lambda.1se))
+    abline(v = mins, lty = 3)
+    dof = statlist[[1]]$nzero
+    lambda = statlist[[1]]$lambda
+    axis(side = 3, at = log(lambda), labels = paste(dof), tick = FALSE, 
+        line = 0, cex = cex, cex.axis= cex.axis, cex.lab = cex.lab)
+    shape::colorlegend(posy = c(0.2, 0.8), posx = c(0.93, 0.945) - 0.03, 
+        col = rainbow(ngamma, start = 0.1, end = 1), zlim = c(0, 
+            1), zval = gamma, main = expression(gamma), digit = 2, cex=cex)
+    invisible()
+}
+```
+
+Prepare predictors and response in training and test set for analyses with `cv.glmnet`:
+
+```{r, warning=FALSE, message=FALSE}
+library("glmnet")
+x <- model.matrix(D_DEPDYS ~ ., data = train)
+y <- train$D_DEPDYS
+x_test <- model.matrix(D_DEPDYS ~ ., data = test)
+y_test <- test$D_DEPDYS
+```
+
+To choose the regularization method, we should think about the properties of the data, and think about how the results might be interpreted and applied. 
+
+To choose between ridge and lasso methods, the correlation between predictors is relevant: 
+
+```{r, fig.width=4, fig.height=3}
+cors <- cor(x[,-1])
+diag(cors) <- NA
+hist(cors, main = "correlations", cex.lab = .7, cex.axis=.7)
+```
+
+There are substantial correlations between predictors, thus some ridge penalization will likely be beneficial for prediction.
+
+For interpretation and application, a sparse model with only few predictors would likely be useful. For example, if only a subset of items is relevant for classifying depressed versus not, we could administer only a subset of items to future patients, reducing assessment burden. Some lasso penalization would thus be useful. 
+
+The relaxed lasso could further reduce the number of predictors retained, without damaging predictive accuracy too much, because it eases shrinkage on large coefficients with through $\gamma<1$.
+
+There is no single correct choice, important is to make an informed choice. I opted to fit a relaxed lasso (which also includes the standard lasso), a ridge model and an elastic net (which combines the ridge and lasso penalties) with $\alpha$ of .25:
+
+```{r}
+## ridge
+set.seed(42)
+r_mod <- cv.glmnet(x = x, y = y, family = "binomial", alpha = 0)
+r_mod
+
+## elastic net alpha .25
+set.seed(42)
+en_mod <- cv.glmnet(x = x, y = y, family = "binomial", alpha = 0.25)
+en_mod
+
+## relaxed lasso
+set.seed(42)
+rl_mod <- cv.glmnet(x = x, y = y, relax = TRUE, family = "binomial")
+rl_mod
+```
+
+
+```{r, fig.width=7, fig.height=2.5, warning=FALSE, message=FALSE}
+par(mfrow = c(1, 3))
+plot(r_mod); plot(en_mod); plot(rl_mod)
+```
+
+Lowest cross-validated deviance is 1.029, obtained for the elastic net and relaxed lasso, when using the `lambda.min` criterion. For the relaxed lasso, this yields a model with 37 predictors, and a $\gamma$ of 1 should be employed (i.e., the original lasso fit!).
+
+One may prefer the more conservative (and more sparse and stable) `lambda.1se` criterion (the default in `glmnet`). Then the minimum deviance is obtained with elastic net, and relaxed lasso is very close.
+
+We evaluate the best-fitting model(s) on the test data:
+
+```{r}
+y_test <- test$D_DEPDYS
+```
+
+```{r}
+################################################
+##
+## lambda.1se criterion (sparsity preferred)
+##
+
+## Elastic net (alpha .25)
+en_preds <- predict(en_mod, newx = x_test)
+1 - sum(diag(table(en_preds > 0, y_test)))/nrow(train) ## MCR
+en_probs <- 1 / (1 + exp(-en_preds))
+mean((en_probs - y_test)^2) ## Brier
+
+## Relaxed lasso
+rl_preds <- predict(rl_mod, newx = x_test)
+1 - sum(diag(table(rl_preds > 0, y_test)))/nrow(train) ## MCR
+rl_probs <- 1 / (1 + exp(-rl_preds))
+mean((rl_probs - y_test)^2) ## Brier
+```
+
+Relaxed lasso wins in terms of Brier score, elastic net wins in terms of MCR.
+
+
+```{r}
+##########################################################
+##
+## Lambda.min criterion (predictive accuracy preferred)
+##
+
+## Elastic net (alpha .25)
+en_preds <- predict(en_mod, newx = x_test, s = "lambda.min")
+1 - sum(diag(table(en_preds > 0, y_test)))/nrow(train) ## MCR
+en_probs <- 1 / (1 + exp(-en_preds))
+mean((en_probs - y_test)^2) ## Brier
+
+## Relaxed lasso
+rl_preds <- predict(rl_mod, newx = x_test, s = "lambda.min")
+1 - sum(diag(table(rl_preds > 0, y_test)))/nrow(train) ## MCR
+rl_probs <- 1 / (1 + exp(-rl_preds))
+mean((rl_probs - y_test)^2) ## Brier
+```
+
+For `lambda.min`, relaxed lasso wins in terms of Brier score and MCR.
+
+We inspect which items were selected for prediction: 
+
+```{r}
+## Custom function to get item counts per subscale
+ss_counts <- function(x) {
+  AD <- c(1, 14, 18, 21, 23, 26, 27, 30, 33, 35, 36, 39, 40, 44, 49, 53, 58, 
+          66, 72, 78, 86, 89)
+  AA <- c(3, 19, 25, 45, 48, 52, 55, 57, 61, 67, 69, 73, 75, 79, 85, 87, 88)
+  GDD <- c(6, 8, 10, 13, 16, 22, 24, 42, 47, 56, 64, 74)
+  GDA <- c(2, 9, 12, 15, 20, 59, 63, 65, 77, 81, 82)
+  GDM <- c(4, 5, 17, 29, 31, 34, 37, 50, 51, 70, 76, 80, 83, 84, 90)
+  sel_items <- as.numeric(substr(names(x), start = 5, stop = 7))
+  res <- c(sum(sel_items %in% AD), sum(sel_items %in% AA),
+          sum(sel_items %in% GDD), sum(sel_items %in% GDA),
+          sum(sel_items %in% GDM))
+  names(res) <- c("AD", "AA", "GDD", "GDA", "GDM")
+  res
+}
+
+################################################
+##
+## lambda.1se criterion (sparsity preferred)
+##
+
+## elastic net (alpha .25)
+en_coefs <- as.matrix(coef(en_mod))
+ss_counts(en_coefs[en_coefs != 0, ][-1])
+
+## relaxed lasso
+rl_coefs <- as.matrix(coef(rl_mod))
+ss_counts(rl_coefs[rl_coefs != 0, ][-1])
+
+##########################################################
+##
+## Lambda.min criterion (predictive accuracy preferred)
+##
+
+## relaxed lasso
+rl_coefs <- as.matrix(coef(rl_mod, s = "lambda.min"))
+ss_counts(rl_coefs[rl_coefs != 0, ][-1])
+```
+
+Most items tend to be selected from the AD (Anhedonic Depression scale). This makes a lot of sense, because the prediction target is depression. For other disorder types (e.g., anxiety), items from other subscales may be more informative.
+
+
+
+
