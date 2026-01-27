@@ -1,0 +1,65 @@
+---
+title: "Description of the Head Start dataset"
+output: pdf_document
+---
+
+The data are from a large study from the US, to evaluate long-term benefits of participation in the Head Start program. Head Start provides early childhood education, health, nutrition, and parent involvement services to children from low-income and families. The data comprise a birth cohort of children, who were enrolled around 1984 and tracked until 2004. The dataset contains both characteristics of the children and their families (mother, father, household).
+
+The response variable of interest is `Test_Pct04` (nationally normed percentile score (from 0-99) on a battery of cognitive tests in 2004). All predictors in the dataset were assessed between 1984 to 1996.
+
+### Predictors
+
+| Variable              | Description                                                                 |
+|-----------------------|-----------------------------------------------------------------------------|
+| `Age_Moth_Birth`      | AGE OF MOTHER AT BIRTH OF CHILD                                            |
+| `AgeAFQT`             | Mother's age-corrected Armed Forced Qualification Test (AFQT) score         |
+| `Ageat1stBirth`       | Mother's age at first birth                                                  |
+| `Allergy1`            | CHILD HAS AN ALLERGIC CONDITION                                              |
+| `Asthma1`             | CHILD HAS ASTHMA                                                             |
+| `BirthOrder`          | BIRTH ORDER OF CHILD                                                         |
+| `BirthWeight`         | WGT OF CHILD AT BIRTH IN OUNCES                                              |
+| `Blind1`              | CHILD HAS SERIOUS DIFFICULTY IN SEEING                                       |
+| `Blood1`              | CHILD HAS A BLOOD DISORDER (E.G. SICKLE CELL)                                |
+| `BornEarlyorLate`     | CHILD BORN EARLY OR LATE                                                     |
+| `BornOnTime`          | CHILD BORN WITHIN A WK OF DUE DATE                                           |
+| `BPI_Raw88`           | BPI (BEHAVIOR PROBLEM INDEX) PERCENTILE SCORE in 1988                        |
+| `BPIAS_Raw88`         | BPI (BEHAVIOR PROBLEM INDEX) ANTISOCIAL PERCENTILE SCORE in 1988             |
+| `Breastfed`           | CHILD WAS BREASTFED                                                          |
+| `Crippled1`           | CHILD IS CRIPPLED, OR HAS ORTHOPEDIC CONDITION                               |
+| `Disturb1`            | CHLD HAS SERIOUS EMOTIONAL DISTURBANCE                                       |
+| `DOB_Mo_Child`        | MONTH IN WHICH CHILD WAS BORN                                                |
+| `DOB_Yr_Child`        | YEAR IN WHICH CHILD WAS BORN                                                 |
+| `Ear1`                | CHILD HAS CHRONIC EAR PROBLMS, INFECTIONS                                     |
+| `Epilepsy1`           | CHILD HAS EPILEPSY/SEIZURES                                                  |
+| `Ever_Daycare`        | CHILD WAS EVER ENROLLED IN DAY CARE                                          |
+| `FamilySize79`        | Family size in 1979                                                          |
+| `Father_HH86`         | Father living in the family household in 1986                                |
+| `Freq_Alc_BefBirth`   | FREQ OF ALCOHOL USE BY MOTHER DURING PREGNANCY                               |
+| `Freq_Smoke_BefBirth` | FREQ OF CIGARETTE SMOKING BY MOTHER DURING PREGNANCY                         |
+| `Grandmother86`       | Grandmother living in the family household in 1986                           |
+| `Heart1`              | CHILD HAS HEART TROUBLE                                                      |
+| `Height_Mom81`        | Mother's body height in 1981                                                 |
+| `HighGrade_GDad79`    | Father's highest grade completed in 1979                                     |
+| `HOME_Pct88`          | HOME: TOTAL PERCENTILE SCORE in 1988                                         |
+| `HOMECog_Pct88`       | HOME: COGNITIVE STIMULATION PERCENTILE SCORE in 1988                         |
+| `HomeEmo_Pct88`       | HOME: EMOTIONAL SUPPORT PERCENTILE SCORE in 1988                             |
+| `Hyper1`              | CHILD HAS HYPERKINESIS, HYPERACTIVITY                                        |
+| `Illness_1stYr`       | CHILD TAKEN TO DR FOR ILLNESS 1ST YR                                         |
+| `Insurance88`         | Child's health care covered by insurance in 1988                             |
+| `LD`                  | CHILD HAS LEARNING DISABILITY                                                |
+| `Medicaid88`          | Child's health care covered by Medicaid in 1988                              |
+| `MomDropout`          | Whether mother dropped out before finishing high school                      |
+| `MothED`              | Mother's years of completed education                                        |
+| `NumIll88`            | NUMBER OF ILLNESSES CHILD HAD UNTIL 1988                                     |
+| `PermInc`             | Permanent family income (avg., 2004 dollars)                                 |
+| `PIATMT_Raw88`        | Peabody Picture Vocabulary Test (PPVT) 1988                                  |
+| `PIATRR_Raw88`        | Peabody Individual Achievement Math Subtest (PIATMT) 1988                    |
+| `PPVT_Raw86`          | Peabody Reading Recognition Subtest (PIATRR) 1988                            |
+| `program`             | Child in preschool or Head Start (HS, Pre, None)                             |
+| `Race_Child`          | 1=Hispanic, 2=Black, 3=White                                                  |
+| `RepeatNone98`        | CHILD DID NOT REPEAT A GRADE BEFORE 1998                                     |
+| `Resp1`               | CHLD HAS RESPIRATORY DISORDER/SINUS INFECTION                                |
+| `Retard1`             | CHILD HAS MENTAL RETARDATION                                                 |
+| `Sex_Child`           | SEX OF CHILD (1=MALE, 2=FEMALE)                                              |
+| `Speech1`             | CHILD HAS SPEECH IMPAIRMENT    	
+	

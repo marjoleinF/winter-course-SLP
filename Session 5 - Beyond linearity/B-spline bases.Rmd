@@ -1,0 +1,30 @@
+---
+title: "B-spline bases"
+output: pdf_document
+---
+
+```{r, fig.width = 5, fig.height=3.2}
+library("MASS")
+data(Boston)
+plot(Boston$lstat, Boston$medv, xlab = "x", ylab = "y", cex = .5, cex.axis=.7, 
+     cex.lab = .7)
+library("splines")
+bs_x <- bs(Boston$lstat, df = 20)
+matplot(Boston$lstat[order(Boston$lstat)], bs_x[order(Boston$lstat), ], 
+        type = "l", xlab = "x", ylab = "h(x)", 
+        main = "20 B-spline basis functions", 
+        cex.main = .7, cex.axis=.7, cex.lab = .7)
+```
+
+Note that by default, knots are placed based on quantiles (so more knots in areas with higher density).
+
+Estimate coefficients (in an unpenalized manner) and inspect the fitted spline curve:
+
+```{r fig.width = 5, fig.height=3.2, warning = FALSE, message = FALSE}
+library("gam")
+mod_df20 <- gam(medv ~ bs(lstat, df = 20), data = Boston)
+coef(mod_df20)
+plot(mod_df20, residuals = TRUE, col = "blue", cex = .5,  
+     cex.axis=.7, cex.lab = .7)
+```
+

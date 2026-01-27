@@ -1,0 +1,23 @@
+---
+title: "Computing similarities"
+output: pdf_document
+---
+
+```{r}
+con <- c(-1.10, -0.09, -1.27, -0.93, -0.59)
+neu <- c(-0.22, -1.42, -0.33, 0.55, -0.43)
+(mat <- cbind(con, neu))
+(similarities <- mat %*% t(mat))
+```
+
+Observations 2 and 4 have the lowest similarity, they are most opposite. I.e., they are most strongly negatively
+correlated.
+
+Observations 1 and 4 have the highest similarity, they are most similar. I.e., they are most strongly positively
+correlated.
+
+Observations 1 and 2 have similarity closest to 0. This means they are very similar and probably quite
+average.
+
+Observation 5 has the lowest value on the diagonal (and observation 4 the highest). This indicates they are
+the most (least) average observations.
