@@ -1,0 +1,390 @@
+---
+title: "Winter Course Statistical Learning  \n Session 1: Introduction"
+format: 
+    beamer
+---
+
+## Session 1 Topics
+
+* Supervised versus unsupervised 
+
+* Explanation versus prediction
+
+* Bias, variance and irreducible error
+
+* $k$ Nearest Neighbors (kNN)
+
+* Curse of dimensionality
+
+
+
+## Statistical Learning
+
+Vast set of tools for understanding data.
+
+* Supervised: $Y \leftarrow f(X_1,\ldots,X_p)$; predict $Y$ on the basis of the $X$s.
+
+    * Sessions 1, 2, 3 and 5 of this course.
+    
+* Unsupervised: $X_1,\ldots,X_p$; finding structure in the $X$s (underlying dimensions/groups).
+
+    * Session 4 of this course.
+
+
+## Explanation versus Prediction
+
+The linear regression model $$Y =  \beta_0 + \beta_1X_1 + \dots + \beta_pX_p+ \epsilon$$ can be used for explanation and/or prediction.
+
+* Explanation: Understanding how the $X$s are related to $Y$ (possibly causally).
+
+* Prediction: If we have new observations with known values of the $X$s, what is the expected (predicted) value of $Y$ and how accurate are these predictions?
+
+
+
+
+## A sample of data
+
+```{r, echo=TRUE, eval=FALSE, fig.width = 4, fig.height = 4}
+set.seed(42)
+n <- 100
+x <- runif(n, min = -5, max = 5)
+y <- 0.25*x + 0.1*x^2 + rnorm(n)
+plot(x, y, cex.lab = .7, cex.axis = .7, main = "")
+```
+
+## A sample of data
+
+```{r, echo=FALSE, eval=TRUE, fig.width = 3.5, fig.height = 3.5}
+set.seed(42)
+n <- 100
+x <- runif(n, min = -5, max = 5)
+y <- 0.25*x + 0.1*x^2 + rnorm(n)
+plot(x, y, cex = .5, cex.lab = .7, cex.axis = .7, main = "")
+```
+
+
+## First course in regression: Explanation focus
+
+```{r, echo=TRUE, eval=FALSE} 
+lmod <- lm(y ~ x)
+summary(lmod)
+```
+
+* What is the direction and strength of the effect of predictor(s)? 
+
+* How uncertain is the estimated effect? 
+
+* Is the effect significant?
+
+## First course in regression
+
+```{r, echo=FALSE, eval=TRUE}
+lmod <- lm(y ~ x)
+summary(lmod)
+```
+
+
+## Explanatory focus in regression
+
+* Adequate estimation is assumed to be *unbiased* estimation: $$\mathbb{E} [\hat{\beta}] = \beta$$.
+
+* Estimated coefficients are accurate *on average* (over many replications of collecting a sample and fitting the model).
+
+* Ordinary Least Squares (or maximum likelihood) yields unbiased estimation: $$\hat{\beta} = \operatorname*{arg\,min}_\beta \left( \sum^N_{i=1} (y_i - x_i^\top \beta)^2 \right)$$ 
+
+* Note that squared errors are minimized on *training* observations.
+
+
+
+## This course: From explanatory to predictive focus
+
+* Unbiased estimation is optimal if:
+
+    * we have huge samples (very rare in science), 
+    * or very many samples (only in meta analysis),
+    * or perfect predictions are possible (extremely rare in science).
+
+* In behavioral sciences, the number of observations tends to be limited, we only have a single dataset, predictions will always be (far from) perfect (random noise and measurement error).
+
+
+
+
+
+
+## This course: Prediction focus in regression
+
+* How well does the fitted model predict on *new* observations from the same population?
+
+```{r, fig.width=8, fig.height=4}
+n_test <- 70
+x_test <- runif(n_test, min = -5, max = 5)
+y_test <- 0.25*x_test + 0.1*x_test^2 + rnorm(n_test)
+preds_test <- predict(lmod, 
+                      newdata = data.frame(x = x_test))
+R2_test <- 1 - mean((y_test - preds_test)^2) / mean((y_test - mean(y_test))^2)
+preds_train <- predict(lmod)
+R2_train <- 1 - mean((y - preds_train)^2) / mean((y - mean(y))^2)
+par(mfrow = c(1, 2))
+plot(x, y, main = paste("Training observations, R2 =", round(R2_train, 2)), 
+     ylim = c(-2, 5), cex.main = .8, cex.lab = .7, cex.axis = .7, cex = .7)
+cf <- coef(lmod)
+abline(cf[1], cf[2])
+plot(x_test, y_test, main = paste("Test observations, R2 =", round(R2_test, 2)),
+     xlab ="x", ylab = "y", ylim = c(-2, 5), cex.main = .8, cex.lab = .7, 
+     cex.axis = .7, cex = .7)
+abline(cf[1], cf[2])
+```
+
+\vspace{-.5cm}
+* Fit on training observations is overly optimistic.
+
+    * Session 3 (penalized regression): Do not perfectly minimize errors on training observations, but add a penalty.
+
+
+
+
+## Repeat sampling and model fitting 500 times
+
+```{r, fig.width = 3.5, fig.height = 3.5}
+nreps <- 500
+coefs <- list()
+for (i in 1:nreps) {
+  ## Generate training and test data
+  x <- runif(n, min = -5, max = 5)
+  y <- 0.25*x + 0.1*x^2 + rnorm(n)
+  ## Fit model to training data
+  lmod <- lm(y ~ x)
+  coefs[[i]] <- coef(lmod)
+}
+set.seed(42)
+n <- 100
+x <- runif(n, min = -5, max = 5)
+y <- 0.25*x + 0.1*x^2 + rnorm(n)
+plot(x, y, type = "n", cex.axis = .7, cex.lab = .7, cex.main = .7, xlim = c(-4, 4),
+     main = "True model (blue)
+     OLS regressions fitted to samples of size 100 (gray)")
+curve(0.25*x + 0.1*x^2, from = -5.5, to = 5.5, add = TRUE, lwd = 2, col = "blue")
+for (i in 1:length(coefs)) {
+  abline(coefs[[i]], col = adjustcolor("gray", alpha = 0.15))
+}
+```
+
+
+## Minimizing the expected prediction error
+
+We consider the performance of a statistical method, repeatedly applied to data samples from the same population  $P^*$.
+
+We'd like to find the method that is expected to provide the best prediction model $\hat{f}(X, \mathcal{D})=\hat{Y}$, 
+
+where $\mathcal{D}$ is a training dataset of $n$ observations drawn from the population $(X,Y) \sim P^*$.
+
+The Expected Prediction Error (EPE) is:
+
+![](EPE.png){width=200px}
+
+This EPE is a somewhat theoretical quantity, we cannot compute it in practice, only estimate it.
+
+
+
+## Decomposing EPE into Bias, variance, irreducible error
+
+EPE = Bias$^2$ + Variance + Irreducible Error. Let:
+
+$f(X)$ be the 'true' model (unknown but given by $P^*$),
+
+$\hat{f}(X; \mathcal{D}) = \hat{Y}$ be the model-fitting procedure applied to a single dataset $\mathcal{D}$ (i.e., a predictive model fitted to $\mathcal{D}$),
+
+![](av_model.png){width=120px} be the average fitted model over many repetitions of sampling a dataset $\mathcal{D}$ and applying the method to it.
+
+## Decomposing EPE into Bias, variance, irreducible error
+
+Then it follows:
+
+* Bias$^2$ = $\mathbb{E}_{X}\left[ \{ \bar{f}(X) - f(X) \}^2 \right]$, the average squared difference between the true model and the average fitted model, 
+
+* Variance = ![](variance.png){width=175px}, the average squared difference between individual iterations of drawing a sample and fitting a model, and the average fitted model,
+
+* Irreducible Error = $\mathbb{E}_{X,Y} \left[ \{Y - f(X)\}^2 \right] = \sigma_\epsilon^2$, the average squared difference between the true model and data points.
+
+Informally, more bias is less flexibility, yielding higher variance.
+
+Irreducible error is a property of the chosen population (data problem),  beyond our control. 
+
+We must choose (squared) bias and variance so that their sum is minimized (thus EPE is minimized).
+
+
+
+
+## Estimating expected prediction error
+
+In practice, we *estimate* EPE using test observations:
+
+$$\text{MSE}_{test} = \frac{1}{n_\text{test}}\sum_{i=1}^{n_\text{test}} \left( y_i - \hat{y}_i\right)^2$$
+
+* Model with lowest test MSE generalizes best and should (in most cases) be preferred.
+
+* Other loss / error functions can also be used to select the best model, such as mean absolute error (but not easily decomposable into bias, variance and irreducible error).
+
+
+
+
+
+
+## Bias, variance, irreducible error: Example
+
+```{r,fig.width = 3.5, fig.height = 3.5}
+set.seed(42)
+n <- 100
+x <- runif(5000, min = -5, max = 5)
+y <- 0.25*x + 0.1*x^2 + rnorm(5000)
+plot(x, y, main = "", 
+     cex = .5, cex.main = .7, cex.lab = .7, cex.axis = 0.7,
+     pch = ".", xlim = c(-4, 4))
+curve(0.25*x + 0.1*x^2, from = -5.5, to = 5.5, add = TRUE, lwd = 2, col = "blue")
+for (i in 1:length(coefs)) {
+  abline(coefs[[i]], col = adjustcolor("gray", alpha = 0.05))
+}
+a <- mean(sapply(coefs, `[[`, 1))
+b <- mean(sapply(coefs, `[[`, 2))
+abline(a, b)
+
+a <- sd(sapply(coefs, `[[`, 1))
+b <- sd(sapply(coefs, `[[`, 2))
+```
+
+
+## Bias, variance, irreducible error: Example
+
+* Bias$^2$: Average squared difference between blue and black line.
+
+* Variance: Average squared differences between gray lines.
+
+* Irreducible error: Average squared differences between blue line and data points.
+
+
+
+## kNN: A completely non-parametric approach
+
+* $k$ Nearest Neighbours (kNN) does not make assumptions about the distribution of data.
+
+* As with nearly any non-parametric method, could also argue it is overparameterized.
+
+    * with $k = 1$, as many means as training datapoint are estimated.
+
+
+
+## kNN: A completely non-parametric approach
+
+```{r, fig.width=8, fig.height=4}
+set.seed(42)
+x <- runif(n, min = -5, max = 5)
+y <- 0.25*x + 0.1*x^2 + rnorm(n)
+library("FNN")
+kNN_1_train <- knn.reg(data.frame(x), y = y, k = 3L) 
+kNN_1_test <- knn.reg(data.frame(x), test = data.frame(x = x_test), y = y, k = 3L)  
+#R2_test <- 1 - mean((y_test - preds_test)^2) / mean((y_test - mean(y_test))^2)
+#R2_train <- 1 - mean((y - preds_train)^2) / mean((y - mean(y))^2)
+par(mfrow = c(1, 2))
+plot(x, y, main = "Training observations, k = 3", 
+     ylim = c(-2, 5), cex.main = .8, cex.lab = .7, cex.axis = .7, cex = .7)
+lines(x[order(x)], kNN_1_train$pred[order(x)])
+plot(x_test, y_test, main = "Test observations, k = 3", 
+     ylim = c(-2, 5), cex.main = .8, cex.lab = .7, cex.axis = .7, cex = .7)
+lines(x_test[order(x_test)], kNN_1_test$pred[order(x_test)])
+```
+
+## kNN: A completely non-parametric approach
+
+```{r, fig.width=8, fig.height=4}
+kNN_1_train <- knn.reg(data.frame(x), y = y, k = 30L) 
+kNN_1_test <- knn.reg(data.frame(x), test = data.frame(x = x_test), y = y, k = 30L)  
+#R2_test <- 1 - mean((y_test - preds_test)^2) / mean((y_test - mean(y_test))^2)
+#R2_train <- 1 - mean((y - preds_train)^2) / mean((y - mean(y))^2)
+par(mfrow = c(1, 2))
+plot(x, y, main = "Training observations, k = 30", 
+     ylim = c(-2, 5), cex.main = .8, cex.lab = .7, cex.axis = .7, cex = .7)
+lines(x[order(x)], kNN_1_train$pred[order(x)])
+plot(x_test, y_test, main = "Test observations, k = 30", 
+     ylim = c(-2, 5), cex.main = .8, cex.lab = .7, cex.axis = .7, cex = .7)
+lines(x_test[order(x_test)], kNN_1_test$pred[order(x_test)])
+```
+    
+What happens to bias if k increases? What happens to variance if k increases?
+
+If irreducible error increases, should a lower or higher k be preferred?
+
+
+## The curse of dimensionality
+
+kNN (and other distance-based methods) assumes that nearness is meaningful.
+
+Are distances in high dimensional problems just as meaningful as in low-dimensional problems?
+
+```{r, echo=TRUE, eval=FALSE}
+p <- 10000
+N <- 100
+set.seed(42)
+X <- matrix(rnorm(p*N), ncol = p, nrow = N)
+par(mfrow = c(2, 3))
+for (p in c(1, 2, 10, 100, 1000, 10000)) {
+  distances <- dist(X[ , 1:p])
+  hist(distances, main = paste(p, "dimensions"), 
+       xlim = c(0, max(distances)), xlab = "Pairwise distances")
+}
+```
+
+## The curse of dimensionality
+
+```{r, echo=FALSE, eval=TRUE}
+p <- 10000
+N <- 100
+set.seed(42)
+X <- matrix(rnorm(p*N), ncol = p, nrow = N)
+par(mfrow = c(2, 3))
+for (p in c(1, 2, 10, 100, 1000, 10000)) {
+  distances <- dist(X[ , 1:p])
+  hist(distances, main = paste(p, "dimensions"), 
+       xlim = c(0, max(distances)), xlab = "Pairwise distances")
+}
+```
+
+
+
+## The curse of dimensionality
+
+Distance is more meaningful in lower dimensions.
+
+With very high dimensions, all observations are far apart, there are no real neighbours. Being nearer by 1 or 2 is likely to reflect only chance fluctuations. 
+
+High-dimensional space is lonely!
+
+Would you prefer a high bias (low flexibility) or low bias (high flexibility) method for high-dimensional data problems?
+
+How can one reduce dimensionality? (also: session 4)
+
+
+## Exercise: Flexibility and predictive performance
+
+For each of parts (a) through (d), indicate whether we would generally expect the performance of a flexible (low bias) statistical learning method to be better or worse than an inflexible (high bias) method:
+
+a) Sample size $N$ is extremely large, and the number of predictors $p$ is small.
+
+b) The number of predictors $p$ is extremely large, and the number of observations $N$ is small.
+
+c) The relationship between the predictors and response is highly non-linear.
+
+d) The variance of the error terms, $\sigma^2 = Var(\epsilon)$, is extremely high.
+
+
+
+
+## We see eachother again in Session 5: Non-linear models
+
+* Generalized Additive Models and Smoothing Splines
+
+* Support Vector Machines
+
+* Decision Trees
+
+* Tree ensembles
+
