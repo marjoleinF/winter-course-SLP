@@ -45,16 +45,6 @@ c) Use function `predict` to obtain predictions for the training and test observ
 
 # Exercise 2: Fit a decision tree
 
-```{r,eval=FALSE,echo=FALSE}
-library("partykit")
-ct <- ctree(Test_Pct04 ~ ., data = HSdata[train_ids,])
-ct_test_preds <- predict(ct, newdata = HSdata[-train_ids,])
-ct_train_preds <- predict(ct, newdata = HSdata[-train_ids,])
-
-mean((ct_train_preds - HSdata$Test_Pct04[-train_ids])^2)
-var(HSdata$Test_Pct04[-train_ids])
-```
-
 a) Fit a conditional inference tree to the training data using function `ctree` (of package `partykit`). Inspect and interpret the result by printing and plotting.
 
 b) Use function `predict` to obtain predictions for the training and test observations. Compute test MSE and training MSE and compare them. Also compare with the MSEs of the GAM fitted in the previous exercise.
@@ -78,7 +68,6 @@ e) For both ensembles, use functions `varImpPlot` and `importance` to inspect an
 f) Use function `partialPlot` to inspect the effects of variables `AgeAFQT`, `PermInc`, `BirthOrder` and `Race_Child`. Note that you need to supply the (training) data to argument `pred.data` and the variable name to argument `x.var`. Describe the effects of these predictors.
 
 g) Use function `predict` to obtain predictions for the training and test observations for both ensembles. Compute test MSE and training MSE and compare between the ensembles and with the single tree and GAM fitted earlier.
-
 
 
 
